@@ -1,4 +1,5 @@
 const prisma = require('../config/database');
+const lockService = require('./lockService');
 
 /**
  * Service de gestion des accès
@@ -115,7 +116,21 @@ class AccessService {
       }
     });
 
-    // 6. Retourner l'accès créé
+    // 6. Programmer le code sur la serrure connectée
+    try {
+      await lockService.programAccessCode({
+        code: newAccess.code,
+        accessType: newAccess.accessType,
+        propertyId,
+        userId,
+        expiresAt: newAccess.endDate,
+      });
+    } catch (error) {
+      console.error('❌ Erreur lors de la programmation sur la serrure:', error.message);
+      // On continue même si la serrure échoue - l'accès est créé en base
+    }
+
+    // 7. Retourner l'accès créé
     return newAccess;
   }
 
@@ -341,7 +356,19 @@ class AccessService {
       }
     });
 
-    // 5. Retourner le succès avec informations de traçabilité
+    // 5. Révoquer le code sur la serrure connectée
+    try {
+      await lockService.revokeAccessCode({
+        code: access.code,
+        propertyId: access.propertyId,
+        reason: 'Révocation manuelle par le propriétaire',
+      });
+    } catch (error) {
+      console.error('❌ Erreur lors de la révocation sur la serrure:', error.message);
+      // On continue même si la serrure échoue - l'accès est révoqué en base
+    }
+
+    // 6. Retourner le succès avec informations de traçabilité
     return {
       success: true,
       message: 'Accès révoqué avec succès',

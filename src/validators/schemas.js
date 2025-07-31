@@ -50,10 +50,10 @@ const loginSchema = z.object({
 
 // 🏠 PROPRIÉTÉS
 const createPropertySchema = z.object({
-  name: z
-    .string({ required_error: "Le nom de la propriété est obligatoire" })
-    .min(1, "Le nom ne peut pas être vide")
-    .max(200, "Nom trop long (max 200 caractères)")
+  title: z
+    .string({ required_error: "Le titre de la propriété est obligatoire" })
+    .min(1, "Le titre ne peut pas être vide")
+    .max(200, "Titre trop long (max 200 caractères)")
     .trim(),
   
   address: z

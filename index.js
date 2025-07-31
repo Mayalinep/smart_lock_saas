@@ -20,6 +20,7 @@ const { logRequest, logError, logger } = require('./src/utils/logger');
 const authRoutes = require('./src/routes/auth');
 const propertyRoutes = require('./src/routes/properties');
 const accessRoutes = require('./src/routes/access');
+const lockRoutes = require('./src/routes/lock');
 const healthRoutes = require('./src/routes/health');
 
 // Import du middleware d'erreur
@@ -63,6 +64,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
 app.use('/api/access', accessRoutes);
+app.use('/api/lock', lockRoutes);
 app.use('/api', healthRoutes);
 
 // Middleware de gestion d'erreurs avec logging

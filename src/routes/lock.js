@@ -1,0 +1,28 @@
+// src/routes/lock.js
+
+const express = require('express');
+const LockController = require('../controllers/lockController');
+const { authenticate } = require('../middleware/auth');
+const { validateRequest, propertyIdParamSchema } = require('../validators/schemas');
+
+const router = express.Router();
+
+/**
+ * Routes de gestion des serrures
+ * Toutes les routes nécessitent une authentification
+ */
+router.use(authenticate);
+
+// Récupération du statut d'une serrure pour une propriété
+router.get('/status/:propertyId', 
+  validateRequest(propertyIdParamSchema, 'params'), 
+  LockController.getLockStatus
+);
+
+// Synchronisation forcée d'une serrure (reprogrammation de tous les codes actifs)
+router.post('/sync/:propertyId', 
+  validateRequest(propertyIdParamSchema, 'params'), 
+  LockController.syncLock
+);
+
+module.exports = router; 
