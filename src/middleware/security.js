@@ -15,21 +15,40 @@ const spamDetection = (req, res, next) => {
   const userAgent = req.get('User-Agent') || '';
   const ip = req.ip;
   
-  // Détection de bots/spam
-  const spamIndicators = [
-    /bot|crawler|spider/i,
-    /scraper|harvester/i,
-    /curl|wget/i,
-    /python|java|perl/i
-  ];
-  
-  const isSpam = spamIndicators.some(pattern => pattern.test(userAgent));
-  
-  if (isSpam) {
-    return res.status(403).json({
-      success: false,
-      message: 'Accès refusé - User-Agent suspect'
-    });
+  // En développement, être moins strict
+  if (process.env.NODE_ENV !== 'production') {
+    // En dev, bloquer seulement les vrais bots
+    const strictSpamIndicators = [
+      /bot|crawler|spider/i,
+      /scraper|harvester/i,
+      /python|java|perl/i
+    ];
+    
+    const isStrictSpam = strictSpamIndicators.some(pattern => pattern.test(userAgent));
+    
+    if (isStrictSpam) {
+      return res.status(403).json({
+        success: false,
+        message: 'Accès refusé - User-Agent suspect'
+      });
+    }
+  } else {
+    // En production, être plus strict
+    const spamIndicators = [
+      /bot|crawler|spider/i,
+      /scraper|harvester/i,
+      /curl|wget/i,
+      /python|java|perl/i
+    ];
+    
+    const isSpam = spamIndicators.some(pattern => pattern.test(userAgent));
+    
+    if (isSpam) {
+      return res.status(403).json({
+        success: false,
+        message: 'Accès refusé - User-Agent suspect'
+      });
+    }
   }
   
   next();
@@ -38,7 +57,7 @@ const spamDetection = (req, res, next) => {
 // Rate limiting anti-spam pour l'authentification
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 tentatives par fenêtre
+  max: process.env.NODE_ENV === 'production' ? 5 : 20, // Plus permissif en dev
   message: {
     success: false,
     message: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.'
@@ -59,7 +78,7 @@ const authLimiter = rateLimit({
 // Rate limiting pour l'API avec escalade progressive
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requêtes par fenêtre
+  max: process.env.NODE_ENV === 'production' ? 100 : 500, // Plus permissif en dev
   message: {
     success: false,
     message: 'Trop de requêtes. Réessayez plus tard.'
@@ -80,9 +99,13 @@ const apiLimiter = rateLimit({
 // Slow down pour les requêtes suspectes
 const speedLimiter = slowDown({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  delayAfter: 50, // Commencer à ralentir après 50 requêtes
-  delayMs: 500, // Ajouter 500ms de délai par requête supplémentaire
-  maxDelayMs: 20000, // Délai maximum de 20 secondes
+  delayAfter: process.env.NODE_ENV === 'production' ? 50 : 200, // Plus permissif en dev
+  delayMs: (used, req) => {
+    const delayAfter = req.slowDown.limit;
+    const delay = process.env.NODE_ENV === 'production' ? 500 : 100;
+    return (used - delayAfter) * delay;
+  },
+  maxDelayMs: process.env.NODE_ENV === 'production' ? 20000 : 5000, // Délai max plus faible en dev
   keyGenerator: (req) => req.ip,
   skipSuccessfulRequests: false
 });
@@ -90,7 +113,7 @@ const speedLimiter = slowDown({
 // Rate limiting spécifique pour les inscriptions (anti-spam)
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 heure
-  max: 3, // 3 inscriptions par heure par IP
+  max: process.env.NODE_ENV === 'production' ? 3 : 10, // Plus permissif en dev
   message: {
     success: false,
     message: 'Trop d\'inscriptions. Réessayez dans 1 heure.'
@@ -111,7 +134,7 @@ const registerLimiter = rateLimit({
 // Rate limiting pour les accès (anti-squatteur)
 const accessLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 10, // 10 créations d'accès par 5 minutes
+  max: process.env.NODE_ENV === 'production' ? 10 : 50, // Plus permissif en dev
   message: {
     success: false,
     message: 'Trop de créations d\'accès. Réessayez dans 5 minutes.'
