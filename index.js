@@ -4,7 +4,16 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 
 // Import des middlewares de sécurité et monitoring
-const { corsOptions, authLimiter, apiLimiter, securityHeaders } = require('./src/middleware/security');
+const { 
+  corsOptions, 
+  spamDetection,
+  authLimiter, 
+  apiLimiter, 
+  speedLimiter,
+  registerLimiter,
+  accessLimiter,
+  securityHeaders 
+} = require('./src/middleware/security');
 const { logRequest, logError, logger } = require('./src/utils/logger');
 
 // Import des routes
@@ -27,11 +36,23 @@ app.use(securityHeaders);
 // CORS avec configuration sécurisée
 app.use(require('cors')(corsOptions));
 
+// Anti-spam global
+app.use(spamDetection);
+
+// Speed limiting pour ralentir les requêtes suspectes
+app.use('/api/', speedLimiter);
+
 // Rate limiting global
 app.use('/api/', apiLimiter);
 
 // Rate limiting spécifique pour l'auth
 app.use('/api/auth', authLimiter);
+
+// Rate limiting pour les inscriptions (anti-spam)
+app.use('/api/auth/register', registerLimiter);
+
+// Rate limiting pour les accès (anti-squatteur)
+app.use('/api/access', accessLimiter);
 
 // Middleware pour parsing
 app.use(express.json({ limit: '10mb' }));
