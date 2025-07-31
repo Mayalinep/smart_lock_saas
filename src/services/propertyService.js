@@ -92,4 +92,153 @@ class PropertyService {
   }
 }
 
-module.exports = PropertyService; 
+/**
+ * Fonction de création d'une propriété
+ * @param {Object} data - Données de la propriété
+ * @param {string} userId - ID du propriétaire
+ * @returns {Object} Propriété créée
+ */
+async function createProperty(data, userId) {
+  // 1. Vérifier que name et address sont présents
+  if (!data.name || !data.address) {
+    const error = new Error('Le nom et l\'adresse de la propriété sont obligatoires');
+    error.status = 400;
+    throw error;
+  }
+
+  // 2. Créer une propriété avec Prisma
+  const newProperty = await prisma.property.create({
+    data: {
+      name: data.name,
+      address: data.address,
+      description: data.description || '',
+      owner: { connect: { id: userId } }
+    }
+  });
+
+  // 3. Retourner l'objet créé
+  return newProperty;
+}
+
+/**
+ * Fonction de récupération des propriétés d'un utilisateur
+ * @param {string} userId - ID de l'utilisateur
+ * @returns {Array} Tableau des propriétés
+ */
+async function getUserProperties(userId) {
+  // 1. Utiliser Prisma pour récupérer toutes les propriétés liées à l'utilisateur
+  const properties = await prisma.property.findMany({
+    where: { ownerId: userId }
+  });
+
+  // 2. Retourner le tableau de propriétés
+  return properties;
+}
+
+/**
+ * Fonction de récupération d'une propriété par ID
+ * @param {string} id - ID de la propriété
+ * @param {string} userId - ID de l'utilisateur (propriétaire)
+ * @returns {Object|null} Propriété trouvée ou null
+ */
+async function getPropertyById(id, userId) {
+  // 1. Utiliser Prisma pour récupérer UNE propriété par son id ET ownerId
+  const property = await prisma.property.findFirst({
+    where: {
+      id,
+      ownerId: userId
+    }
+  });
+
+  // 2. Retourner la propriété (ou null si non trouvée)
+  return property;
+}
+
+/**
+ * Fonction de mise à jour d'une propriété
+ * @param {string} id - ID de la propriété
+ * @param {string} userId - ID de l'utilisateur (propriétaire)
+ * @param {Object} data - Nouvelles données
+ * @returns {Object|null} Propriété mise à jour ou null si non trouvée
+ */
+async function updateProperty(id, userId, data) {
+  // 1. Vérifier que la propriété existe et appartient à l'utilisateur
+  const existingProperty = await getPropertyById(id, userId);
+  
+  if (!existingProperty) {
+    return null;
+  }
+
+  // 2. Valider les données (optionnel car Prisma le fait aussi)
+  const updateData = {};
+  if (data.name) updateData.name = data.name;
+  if (data.address) updateData.address = data.address;
+  if (data.description !== undefined) updateData.description = data.description;
+
+  // 3. Mettre à jour la propriété
+  const updatedProperty = await prisma.property.update({
+    where: { id },
+    data: updateData
+  });
+
+  // 4. Retourner la propriété mise à jour
+  return updatedProperty;
+}
+
+/**
+ * Supprime une propriété
+ * @param {string} id - ID de la propriété
+ * @param {string} userId - ID de l'utilisateur (propriétaire)
+ * @returns {boolean|null} true si supprimée, null si non trouvée
+ */
+async function deleteProperty(id, userId) {
+  // 1. Vérifier que la propriété existe et appartient à l'utilisateur
+  const existingProperty = await getPropertyById(id, userId);
+  
+  if (!existingProperty) {
+    return null;
+  }
+
+  // 2. Supprimer la propriété
+  await prisma.property.delete({
+    where: { id }
+  });
+
+  // 3. Retourner true pour confirmer la suppression
+  return true;
+}
+
+/**
+ * Active/Désactive une propriété
+ * @param {string} id - ID de la propriété
+ * @param {string} userId - ID de l'utilisateur (propriétaire)
+ * @param {boolean} isActive - Nouveau statut actif/inactif
+ * @returns {Object|null} Propriété mise à jour ou null si non trouvée
+ */
+async function togglePropertyStatus(id, userId, isActive) {
+  // 1. Vérifier que la propriété existe et appartient à l'utilisateur
+  const existingProperty = await getPropertyById(id, userId);
+  
+  if (!existingProperty) {
+    return null;
+  }
+
+  // 2. Mettre à jour uniquement le champ isActive
+  const updatedProperty = await prisma.property.update({
+    where: { id },
+    data: { isActive }
+  });
+
+  // 3. Retourner la propriété mise à jour
+  return updatedProperty;
+}
+
+module.exports = { 
+  PropertyService, 
+  createProperty, 
+  getUserProperties, 
+  getPropertyById, 
+  updateProperty, 
+  deleteProperty, 
+  togglePropertyStatus 
+}; 

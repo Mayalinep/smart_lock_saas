@@ -7,21 +7,33 @@ const prisma = require('../config/database');
  */
 const authenticate = async (req, res, next) => {
   try {
-    // TODO: Récupérer le token depuis les cookies
-    // TODO: Vérifier le token avec verifyToken
-    // TODO: Récupérer l'utilisateur en base
-    // TODO: Ajouter l'utilisateur à req.user
-    // TODO: Appeler next() ou renvoyer une erreur 401
-    
-    // Placeholder pour le développement
-    res.status(401).json({ 
-      success: false, 
-      message: 'Middleware d\'authentification à implémenter' 
-    });
+    // 1. Lire le cookie nommé 'token' depuis req.cookies
+    const token = req.cookies.token;
+
+    // 2. Si le cookie est absent → erreur 401
+    if (!token) {
+      const error = new Error('Token manquant');
+      error.status = 401;
+      throw error;
+    }
+
+    // 3. Utiliser verifyToken pour décoder le token
+    const decoded = verifyToken(token);
+
+    // 4. Si verifyToken ne lance pas d'erreur, le token est valide
+    // 5. Attacher l'objet { userId: ... } à req.user
+    req.user = { userId: decoded.userId };
+
+    // 6. Appeler next() si tout est OK
+    next();
+
   } catch (error) {
+    // Si le token est invalide ou expiré → erreur 401
+    const message = error.message === 'Token manquant' ? 'Token manquant' : 'Token invalide';
+    
     res.status(401).json({ 
       success: false, 
-      message: 'Token invalide' 
+      message: message
     });
   }
 };

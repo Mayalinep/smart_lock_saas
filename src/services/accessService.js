@@ -14,14 +14,109 @@ class AccessService {
   static async createAccess(propertyId, ownerId, accessData) {
     const { userId, startDate, endDate, accessType, description } = accessData;
 
-    // TODO: Vérifier que l'utilisateur est propriétaire de la propriété
-    // TODO: Vérifier que l'utilisateur cible existe
-    // TODO: Valider les dates (startDate < endDate, dates futures, etc.)
-    // TODO: Générer un code d'accès unique
-    // TODO: Créer l'accès en base
-    // TODO: Retourner l'accès créé
+    // 1. Vérifier que l'utilisateur est propriétaire de la propriété
+    const property = await prisma.property.findFirst({
+      where: {
+        id: propertyId,
+        ownerId: ownerId
+      }
+    });
 
-    throw new Error('Méthode createAccess à implémenter');
+    if (!property) {
+      const error = new Error('Accès non autorisé à cette propriété');
+      error.status = 403;
+      throw error;
+    }
+
+    // 2. Vérifier que l'utilisateur cible existe
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!targetUser) {
+      const error = new Error('Utilisateur cible non trouvé');
+      error.status = 404;
+      throw error;
+    }
+
+    // Vérifier que l'utilisateur cible n'est pas le propriétaire
+    if (userId === ownerId) {
+      const error = new Error('Tu es déjà propriétaire');
+      error.status = 400;
+      throw error;
+    }
+
+    // 3. Valider les dates
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Vérifier que les dates sont valides
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      const error = new Error('Dates invalides - Format incorrect');
+      error.status = 400;
+      throw error;
+    }
+
+    // Vérifier que startDate < endDate
+    if (start >= end) {
+      const error = new Error('Dates invalides - La date de début doit être antérieure à la date de fin');
+      error.status = 400;
+      throw error;
+    }
+
+    // Vérifier que les dates sont dans le futur
+    if (start <= now) {
+      const error = new Error('Dates invalides - La date de début doit être dans le futur');
+      error.status = 400;
+      throw error;
+    }
+
+    // 4. Générer un code d'accès unique
+    const accessCode = await this.generateAccessCode(accessType);
+
+    // 5. Créer l'accès en base
+    const newAccess = await prisma.access.create({
+      data: {
+        propertyId,
+        userId,
+        ownerId,
+        startDate: start,
+        endDate: end,
+        accessType,
+        code: accessCode,
+        description: description || '',
+        isActive: true
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true
+          }
+        },
+        property: {
+          select: {
+            id: true,
+            name: true,
+            address: true
+          }
+        },
+        owner: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true
+          }
+        }
+      }
+    });
+
+    // 6. Retourner l'accès créé
+    return newAccess;
   }
 
   /**
@@ -31,12 +126,43 @@ class AccessService {
    * @returns {Array} Liste des accès
    */
   static async getPropertyAccesses(propertyId, ownerId) {
-    // TODO: Vérifier que l'utilisateur est propriétaire
-    // TODO: Récupérer tous les accès de la propriété
-    // TODO: Inclure les informations utilisateur
-    // TODO: Trier par date de création ou statut
+    // 1. Vérifier que l'utilisateur est propriétaire de la propriété
+    const property = await prisma.property.findFirst({
+      where: {
+        id: propertyId,
+        ownerId: ownerId
+      }
+    });
 
-    throw new Error('Méthode getPropertyAccesses à implémenter');
+    if (!property) {
+      const error = new Error('Accès non autorisé à cette propriété');
+      error.status = 403;
+      throw error;
+    }
+
+    // 2. Récupérer tous les accès de la propriété avec les infos utilisateur
+    const accesses = await prisma.access.findMany({
+      where: {
+        propertyId: propertyId,
+        revokedAt: null       // Exclure les accès révoqués (soft delete)
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc' // Tri par date de création décroissant
+      }
+    });
+
+    // 3. Retourner la liste des accès trouvés
+    return accesses;
   }
 
   /**
@@ -45,12 +171,85 @@ class AccessService {
    * @returns {Array} Liste des accès de l'utilisateur
    */
   static async getUserAccesses(userId) {
-    // TODO: Récupérer tous les accès de l'utilisateur
-    // TODO: Inclure les informations de propriété
-    // TODO: Filtrer les accès actifs et valides
-    // TODO: Trier par date de fin
+    const now = new Date();
 
-    throw new Error('Méthode getUserAccesses à implémenter');
+    // Récupérer tous les accès de l'utilisateur avec filtres
+    const accesses = await prisma.access.findMany({
+      where: {
+        userId: userId,
+        isActive: true,        // Accès actifs seulement
+        revokedAt: null,       // Exclure les accès révoqués (soft delete)
+        endDate: {            // Date de fin dans le futur
+          gt: now
+        }
+      },
+      include: {
+        property: {
+          select: {
+            name: true,
+            address: true
+          }
+        }
+      },
+      orderBy: {
+        endDate: 'asc' // Tri par date de fin croissante (plus urgent en premier)
+      }
+    });
+
+    // Retourner la liste des accès avec format souhaité
+    return accesses;
+  }
+
+  /**
+   * Récupération de l'historique complet des accès d'une propriété (y compris révoqués)
+   * @param {string} propertyId - ID de la propriété
+   * @param {string} ownerId - ID du propriétaire
+   * @returns {Array} Historique complet des accès
+   */
+  static async getPropertyAccessHistory(propertyId, ownerId) {
+    // 1. Vérifier que l'utilisateur est propriétaire de la propriété
+    const property = await prisma.property.findFirst({
+      where: {
+        id: propertyId,
+        ownerId: ownerId
+      }
+    });
+
+    if (!property) {
+      const error = new Error('Accès non autorisé à cette propriété');
+      error.status = 403;
+      throw error;
+    }
+
+    // 2. Récupérer TOUS les accès (actifs ET révoqués)
+    const allAccesses = await prisma.access.findMany({
+      where: {
+        propertyId: propertyId
+        // Pas de filtrage sur revokedAt pour voir l'historique complet
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc' // Plus récent en premier
+      }
+    });
+
+    // 3. Enrichir les données avec le statut
+    const enrichedAccesses = allAccesses.map(access => ({
+      ...access,
+      status: access.revokedAt ? 'RÉVOQUÉ' : (access.isActive ? 'ACTIF' : 'INACTIF'),
+      isRevoked: !!access.revokedAt
+    }));
+
+    return enrichedAccesses;
   }
 
   /**
@@ -81,6 +280,77 @@ class AccessService {
     // TODO: Retourner l'accès mis à jour
 
     throw new Error('Méthode updateAccess à implémenter');
+  }
+
+  /**
+   * Révocation d'un accès (soft delete avec traçabilité)
+   * @param {string} accessId - ID de l'accès
+   * @param {string} ownerId - ID du propriétaire
+   * @returns {Object} Résultat de la révocation
+   */
+  static async deleteAccessById(accessId, ownerId) {
+    // 1. Vérifier si l'accès existe et récupérer la propriété
+    const access = await prisma.access.findUnique({
+      where: { id: accessId },
+      include: {
+        property: {
+          select: {
+            ownerId: true
+          }
+        }
+      }
+    });
+
+    // 2. Vérifier que l'accès existe ET que le propriétaire est autorisé
+    if (!access || access.property.ownerId !== ownerId) {
+      const error = new Error('Accès non trouvé ou non autorisé');
+      error.status = 404;
+      throw error;
+    }
+
+    // 3. Vérifier si l'accès n'est pas déjà révoqué
+    if (access.revokedAt) {
+      const error = new Error('Accès déjà révoqué');
+      error.status = 400;
+      throw error;
+    }
+
+    // 4. Soft delete : révocation avec traçabilité
+    const revokedAccess = await prisma.access.update({
+      where: { id: accessId },
+      data: {
+        isActive: false,        // Désactiver l'accès
+        revokedAt: new Date(),  // Horodatage de révocation
+        revokedBy: ownerId      // Qui a révoqué l'accès
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true
+          }
+        },
+        property: {
+          select: {
+            name: true,
+            address: true
+          }
+        }
+      }
+    });
+
+    // 5. Retourner le succès avec informations de traçabilité
+    return {
+      success: true,
+      message: 'Accès révoqué avec succès',
+      data: {
+        access: revokedAccess,
+        revokedAt: revokedAccess.revokedAt,
+        revokedBy: ownerId
+      }
+    };
   }
 
   /**
@@ -118,11 +388,41 @@ class AccessService {
    * @returns {string} Code d'accès
    */
   static async generateAccessCode(accessType) {
-    // TODO: Générer un code selon le type
-    // TODO: Vérifier l'unicité en base
-    // TODO: Retourner le code unique
+    let code;
+    let attempts = 0;
+    const maxAttempts = 10;
 
-    throw new Error('Méthode generateAccessCode à implémenter');
+    do {
+      // Générer un code selon le type
+      if (accessType === 'TEMPORARY') {
+        // Code PIN de 6 chiffres pour accès temporaire
+        code = Math.floor(100000 + Math.random() * 900000).toString();
+      } else if (accessType === 'PERMANENT') {
+        // Code plus long pour accès permanent
+        code = Math.floor(10000000 + Math.random() * 90000000).toString();
+      } else {
+        // Code par défaut
+        code = Math.floor(100000 + Math.random() * 900000).toString();
+      }
+
+      // Vérifier l'unicité en base
+      const existingAccess = await prisma.access.findFirst({
+        where: { code }
+      });
+
+      attempts++;
+      
+      if (!existingAccess) {
+        return code; // Code unique trouvé
+      }
+
+      if (attempts >= maxAttempts) {
+        throw new Error('Impossible de générer un code unique après plusieurs tentatives');
+      }
+
+    } while (attempts < maxAttempts);
+
+    return code;
   }
 
   /**

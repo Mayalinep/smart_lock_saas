@@ -25,6 +25,7 @@ model User {
   // Relations
   ownedProperties Property[] @relation("PropertyOwner")
   accessGrants    Access[]   @relation("AccessUser")
+  createdAccesses Access[]   @relation("AccessOwner")
 
   @@map("users")
 }
@@ -56,12 +57,18 @@ model Access {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  // Champs de révocation (soft delete)
+  revokedAt   DateTime?
+  revokedBy   String?
 
   // Relations
   userId     String
   user       User     @relation("AccessUser", fields: [userId], references: [id], onDelete: Cascade)
   propertyId String
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  ownerId    String
+  owner      User     @relation("AccessOwner", fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@map("accesses")
 }
