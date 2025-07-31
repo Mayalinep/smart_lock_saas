@@ -19,6 +19,12 @@ router.get('/status/:propertyId',
   LockController.getLockStatus
 );
 
+// Récupération de l'historique des événements d'une serrure
+router.get('/events/:propertyId', 
+  validateRequest(propertyIdParamSchema, 'params'), 
+  LockController.getLockEvents
+);
+
 // Synchronisation forcée d'une serrure (reprogrammation de tous les codes actifs)
 router.post('/sync/:propertyId', 
   validateRequest(propertyIdParamSchema, 'params'), 

@@ -1,11 +1,49 @@
 // src/services/lockService.js
 
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
 /**
  * Service de simulation de serrure connectée
  * Simule les appels API vers des serrures physiques (Nuki, Yale, etc.)
  * 
  * FUTUR: Remplacer par de vrais appels API vers les fabricants de serrures
  */
+
+/**
+ * Enregistre un événement de serrure dans l'historique
+ * @param {string} propertyId - ID de la propriété
+ * @param {string} type - Type d'événement (ACCESS_GRANTED, REVOKE, BATTERY_LOW, etc.)
+ * @param {string} details - Détails de l'événement
+ */
+async function logEvent(propertyId, type, details) {
+  try {
+    // Vérifier que la propriété existe
+    const property = await prisma.property.findUnique({
+      where: { id: propertyId }
+    });
+    
+    if (!property) {
+      console.error(`❌ Propriété ${propertyId} non trouvée pour l'événement ${type}`);
+      return null;
+    }
+    
+    // Créer l'événement
+    const event = await prisma.lockEvent.create({
+      data: {
+        propertyId,
+        type,
+        details
+      }
+    });
+    
+    console.log(`📝 Événement enregistré: ${type} pour propriété ${propertyId}`);
+    return event;
+  } catch (error) {
+    console.error(`❌ Erreur lors de l'enregistrement de l'événement ${type}:`, error.message);
+    return null;
+  }
+}
 
 module.exports = {
   /**
@@ -31,6 +69,10 @@ module.exports = {
     // });
     
     console.log(`✅ Code ${code} programmé avec succès sur la serrure`);
+    
+    // Enregistrer l'événement
+    await logEvent(propertyId, 'ACCESS_GRANTED', `Code ${code} programmé (${accessType}) pour utilisateur ${userId}, expire le ${expiresAt}`);
+    
     return { success: true, code, programmedAt: new Date() };
   },
 
@@ -54,6 +96,10 @@ module.exports = {
     // });
     
     console.log(`✅ Code ${code} révoqué avec succès de la serrure`);
+    
+    // Enregistrer l'événement
+    await logEvent(propertyId, 'REVOKE', `Code ${code} révoqué - ${reason}`);
+    
     return { success: true, code, revokedAt: new Date(), reason };
   },
 
@@ -67,12 +113,24 @@ module.exports = {
     // Simulation d'un statut aléatoire
     const statuses = ['locked', 'unlocked', 'error'];
     const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+    const batteryLevel = Math.floor(Math.random() * 100) + 1;
+    
+    // Enregistrer l'événement de vérification
+    await logEvent(propertyId, 'LOCK_STATUS_CHECK', `Statut: ${randomStatus}, Batterie: ${batteryLevel}%`);
+    
+    // Si batterie faible, enregistrer un événement spécifique
+    if (batteryLevel < 20) {
+      await logEvent(propertyId, 'BATTERY_LOW', `Niveau de batterie critique: ${batteryLevel}%`);
+    }
     
     return {
       propertyId,
       status: randomStatus,
       lastActivity: new Date(),
-      batteryLevel: Math.floor(Math.random() * 100) + 1
+      batteryLevel
     };
-  }
+  },
+
+  // Exporter la fonction logEvent pour utilisation externe
+  logEvent
 }; 

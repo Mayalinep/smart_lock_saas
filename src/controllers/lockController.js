@@ -1,6 +1,8 @@
 // src/controllers/lockController.js
 
 const AccessService = require('../services/accessService');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 /**
  * Contrôleur de gestion des serrures
@@ -42,6 +44,70 @@ class LockController {
       res.status(500).json({
         success: false,
         message: 'Erreur lors de la récupération du statut de la serrure',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Récupère l'historique des événements de serrure pour une propriété
+   * @param {Object} req - Requête Express
+   * @param {Object} res - Réponse Express
+   */
+  static async getLockEvents(req, res) {
+    try {
+      const { propertyId } = req.params;
+      const { userId } = req.user;
+      const { type, limit = 50 } = req.query;
+
+      // Vérifier que l'utilisateur est propriétaire de la propriété
+      const property = await prisma.property.findUnique({
+        where: { id: propertyId }
+      });
+
+      if (!property || property.ownerId !== userId) {
+        return res.status(403).json({
+          success: false,
+          message: 'Accès non autorisé à cette propriété'
+        });
+      }
+
+      // Construire la requête avec filtrage optionnel par type
+      const whereClause = { propertyId };
+      if (type) {
+        whereClause.type = type;
+      }
+
+      // Récupérer les événements
+      const events = await prisma.lockEvent.findMany({
+        where: whereClause,
+        orderBy: { timestamp: 'desc' },
+        take: parseInt(limit),
+        select: {
+          id: true,
+          type: true,
+          timestamp: true,
+          details: true
+        }
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Historique des événements récupéré avec succès',
+        data: {
+          propertyId,
+          events,
+          total: events.length,
+          filteredBy: type || 'tous'
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Erreur lors de la récupération des événements:', error);
+      
+      res.status(500).json({
+        success: false,
+        message: 'Erreur lors de la récupération de l\'historique des événements',
         error: error.message
       });
     }

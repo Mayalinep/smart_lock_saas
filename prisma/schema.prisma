@@ -43,6 +43,7 @@ model Property {
   ownerId String
   owner   User     @relation("PropertyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   accesses Access[]
+  lockEvents LockEvent[]
 
   @@map("properties")
 }
@@ -73,6 +74,20 @@ model Access {
   @@map("accesses")
 }
 
+model LockEvent {
+  id          String   @id @default(cuid())
+  propertyId  String
+  type        String   // 'ACCESS_GRANTED', 'REVOKE', 'BATTERY_LOW', 'MANUAL_LOCK', 'LOCK_STATUS_CHECK'
+  timestamp   DateTime @default(now())
+  details     String?
+  
+  // Relations
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("lock_events")
+}
+
 // Enums remplacés par des String avec commentaires ci-dessus
 // UserRole: "USER" | "ADMIN" | "SUPER_ADMIN"  
-// AccessType: "PERMANENT" | "TEMPORARY" | "ONE_TIME" 
+// AccessType: "PERMANENT" | "TEMPORARY" | "ONE_TIME"
+// LockEventType: "ACCESS_GRANTED" | "REVOKE" | "BATTERY_LOW" | "MANUAL_LOCK" | "LOCK_STATUS_CHECK" 
