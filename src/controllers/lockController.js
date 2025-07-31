@@ -1,6 +1,6 @@
 // src/controllers/lockController.js
 
-const lockService = require('../services/lockService');
+const AccessService = require('../services/accessService');
 
 /**
  * Contrôleur de gestion des serrures
@@ -16,11 +16,8 @@ class LockController {
       const { propertyId } = req.params;
       const { userId } = req.user;
 
-      // TODO: Vérifier que l'utilisateur est propriétaire de la propriété
-      // Cette vérification devrait être faite dans un middleware ou service
-
-      // Récupérer le statut de la serrure
-      const lockStatus = await lockService.getLockStatus(propertyId);
+      // Récupérer le statut de la serrure avec vérification des droits
+      const lockStatus = await AccessService.getLockStatus(propertyId, userId);
 
       res.status(200).json({
         success: true,
@@ -32,6 +29,15 @@ class LockController {
 
     } catch (error) {
       console.error('❌ Erreur lors de la récupération du statut de serrure:', error);
+      
+      // Gérer les erreurs d'autorisation
+      if (error.message === 'Accès non autorisé à cette propriété') {
+        return res.status(403).json({
+          success: false,
+          message: 'Accès non autorisé à cette propriété',
+          error: error.message
+        });
+      }
       
       res.status(500).json({
         success: false,

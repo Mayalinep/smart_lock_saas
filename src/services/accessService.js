@@ -463,6 +463,20 @@ class AccessService {
 
     throw new Error('Méthode cleanupExpiredAccesses à implémenter');
   }
+
+  /**
+   * Récupère le statut d'une serrure pour une propriété
+   * @param {string} propertyId - ID de la propriété
+   * @param {string} ownerId - ID du propriétaire
+   * @returns {Object} Statut de la serrure
+   */
+  static async getLockStatus(propertyId, ownerId) {
+    const property = await prisma.property.findUnique({ where: { id: propertyId } });
+    if (!property || property.ownerId !== ownerId) {
+      throw new Error('Accès non autorisé à cette propriété');
+    }
+    return lockService.getLockStatus(propertyId);
+  }
 }
 
 module.exports = AccessService; 

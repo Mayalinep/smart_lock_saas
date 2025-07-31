@@ -31,6 +31,11 @@ router.get('/property/:propertyId/history',
   validateRequest(propertyIdParamSchema, 'params'), 
   AccessController.getPropertyAccessHistory);
 
+// Récupération du statut de serrure pour une propriété (avec validation ID)
+router.get('/lock-status/:propertyId', 
+  validateRequest(propertyIdParamSchema, 'params'), 
+  AccessController.getLockStatus);
+
 // Récupération d'un accès par ID
 router.get('/:id', AccessController.getAccessById);
 

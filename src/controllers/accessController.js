@@ -249,6 +249,25 @@ class AccessController {
       next(error);
     }
   }
+
+  /**
+   * Récupération du statut d'une serrure pour une propriété
+   * GET /api/access/lock-status/:propertyId
+   */
+  static async getLockStatus(req, res, next) {
+    try {
+      const { propertyId } = req.params;
+      const ownerId = req.user.userId;
+      const status = await AccessService.getLockStatus(propertyId, ownerId);
+      res.status(200).json({ 
+        success: true,
+        message: 'Statut serrure récupéré', 
+        data: { lock: status } 
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = AccessController; 
