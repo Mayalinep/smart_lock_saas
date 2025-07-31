@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  phone     String?
+  role      String   @default("USER") // USER, ADMIN, SUPER_ADMIN
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  ownedProperties Property[] @relation("PropertyOwner")
+  accessGrants    Access[]   @relation("AccessUser")
+
+  @@map("users")
+}
+
+model Property {
+  id          String   @id @default(cuid())
+  name        String
+  address     String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  ownerId String
+  owner   User     @relation("PropertyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  accesses Access[]
+
+  @@map("properties")
+}
+
+model Access {
+  id          String   @id @default(cuid())
+  code        String   @unique // Code d'accès unique
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  accessType  String   @default("TEMPORARY") // PERMANENT, TEMPORARY, ONE_TIME
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId     String
+  user       User     @relation("AccessUser", fields: [userId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("accesses")
+}
+
+// Enums remplacés par des String avec commentaires ci-dessus
+// UserRole: "USER" | "ADMIN" | "SUPER_ADMIN"  
+// AccessType: "PERMANENT" | "TEMPORARY" | "ONE_TIME" 
