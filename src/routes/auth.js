@@ -1,6 +1,7 @@
 const express = require('express');
 const AuthController = require('../controllers/authController');
 const { authenticate } = require('../middleware/auth');
+const { validateRequest, registerSchema, loginSchema } = require('../validators/schemas');
 
 const router = express.Router();
 
@@ -8,11 +9,11 @@ const router = express.Router();
  * Routes d'authentification
  */
 
-// Inscription
-router.post('/register', AuthController.register);
+// Inscription (avec validation Zod professionnelle)
+router.post('/register', validateRequest(registerSchema), AuthController.register);
 
-// Connexion
-router.post('/login', AuthController.login);
+// Connexion (avec validation Zod professionnelle)
+router.post('/login', validateRequest(loginSchema), AuthController.login);
 
 // Déconnexion
 router.post('/logout', AuthController.logout);

@@ -10,16 +10,37 @@ class AccessController {
    */
   static async createAccess(req, res, next) {
     try {
-      // TODO: Récupérer l'ID utilisateur depuis req.user
-      // TODO: Extraire les données d'accès depuis req.body
-      // TODO: Valider les données requises
-      // TODO: Appeler AccessService.createAccess
-      // TODO: Retourner l'accès créé
+      // Récupérer l'ID utilisateur depuis req.user (propriétaire)
+      const ownerId = req.user.userId;
 
+      // Extraire les données d'accès depuis req.body
+      const { propertyId, userId, startDate, endDate, accessType, description } = req.body;
+
+      // Valider les données requises
+      if (!propertyId || !userId || !startDate || !endDate || !accessType) {
+        return res.status(400).json({
+          success: false,
+          message: 'Données manquantes: propertyId, userId, startDate, endDate et accessType sont requis'
+        });
+      }
+
+      // Préparer les données d'accès
+      const accessData = {
+        userId,
+        startDate,
+        endDate,
+        accessType,
+        description
+      };
+
+      // Appeler AccessService.createAccess
+      const newAccess = await AccessService.createAccess(propertyId, ownerId, accessData);
+
+      // Retourner l'accès créé
       res.status(201).json({
         success: true,
-        message: 'Controller createAccess à implémenter',
-        data: null
+        message: 'Accès créé avec succès',
+        data: { access: newAccess }
       });
     } catch (error) {
       next(error);
@@ -32,15 +53,20 @@ class AccessController {
    */
   static async getPropertyAccesses(req, res, next) {
     try {
-      // TODO: Récupérer l'ID de la propriété depuis req.params
-      // TODO: Récupérer l'ID utilisateur depuis req.user
-      // TODO: Appeler AccessService.getPropertyAccesses
-      // TODO: Retourner la liste des accès
+      // Récupérer l'ID de la propriété depuis req.params
+      const propertyId = req.params.propertyId;
+      
+      // Récupérer l'ID utilisateur depuis req.user (propriétaire)
+      const ownerId = req.user.userId;
 
+      // Appeler AccessService.getPropertyAccesses
+      const accesses = await AccessService.getPropertyAccesses(propertyId, ownerId);
+
+      // Retourner la liste des accès
       res.status(200).json({
         success: true,
-        message: 'Controller getPropertyAccesses à implémenter',
-        data: []
+        message: `${accesses.length} accès trouvé(s) pour cette propriété`,
+        data: { accesses }
       });
     } catch (error) {
       next(error);
@@ -53,14 +79,54 @@ class AccessController {
    */
   static async getUserAccesses(req, res, next) {
     try {
-      // TODO: Récupérer l'ID utilisateur depuis req.user
-      // TODO: Appeler AccessService.getUserAccesses
-      // TODO: Retourner la liste des accès de l'utilisateur
+      // Récupérer l'ID utilisateur depuis req.user
+      const userId = req.user.userId;
 
+      // Appeler AccessService.getUserAccesses
+      const accesses = await AccessService.getUserAccesses(userId);
+
+      // Retourner la liste des accès de l'utilisateur
       res.status(200).json({
         success: true,
-        message: 'Controller getUserAccesses à implémenter',
-        data: []
+        message: `${accesses.length} accès actif(s) trouvé(s)`,
+        data: { accesses }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Récupération de l'historique complet d'une propriété (y compris accès révoqués)
+   * GET /api/access/property/:propertyId/history
+   */
+  static async getPropertyAccessHistory(req, res, next) {
+    try {
+      // Récupérer l'ID de la propriété depuis req.params
+      const propertyId = req.params.propertyId;
+      
+      // Récupérer l'ID utilisateur depuis req.user (propriétaire)
+      const ownerId = req.user.userId;
+
+      // Appeler AccessService.getPropertyAccessHistory
+      const history = await AccessService.getPropertyAccessHistory(propertyId, ownerId);
+
+      // Statistiques pour le résumé
+      const stats = {
+        total: history.length,
+        active: history.filter(a => a.status === 'ACTIF').length,
+        revoked: history.filter(a => a.status === 'RÉVOQUÉ').length,
+        inactive: history.filter(a => a.status === 'INACTIF').length
+      };
+
+      // Retourner l'historique complet
+      res.status(200).json({
+        success: true,
+        message: `Historique complet: ${stats.total} accès (${stats.active} actifs, ${stats.revoked} révoqués)`,
+        data: { 
+          history,
+          statistics: stats
+        }
       });
     } catch (error) {
       next(error);
@@ -111,19 +177,34 @@ class AccessController {
   }
 
   /**
-   * Révocation d'un accès
-   * DELETE /api/access/:id
+   * Révocation d'un accès (soft delete)
+   * DELETE /api/access/:accessId
    */
-  static async revokeAccess(req, res, next) {
+  static async deleteAccess(req, res, next) {
     try {
-      // TODO: Récupérer l'ID de l'accès depuis req.params
-      // TODO: Récupérer l'ID utilisateur depuis req.user
-      // TODO: Appeler AccessService.revokeAccess
-      // TODO: Retourner un message de succès
+      // Récupérer l'ID de l'accès depuis req.params
+      const accessId = req.params.accessId;
+      
+      // Récupérer l'ID utilisateur depuis req.user (propriétaire)
+      const ownerId = req.user.userId;
 
+      // Appeler AccessService.deleteAccessById (soft delete)
+      const result = await AccessService.deleteAccessById(accessId, ownerId);
+
+      // Retourner le succès avec informations de traçabilité
       res.status(200).json({
-        success: true,
-        message: 'Controller revokeAccess à implémenter'
+        success: result.success,
+        message: result.message,
+        data: {
+          revokedAt: result.data.revokedAt,
+          revokedBy: result.data.revokedBy,
+          access: {
+            id: result.data.access.id,
+            code: result.data.access.code,
+            user: result.data.access.user,
+            property: result.data.access.property
+          }
+        }
       });
     } catch (error) {
       next(error);
