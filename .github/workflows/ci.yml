@@ -34,7 +34,8 @@ jobs:
         env:
           NODE_ENV: test
           DATABASE_URL: file:./ci-test.db
-        run: npm test --silent
+          CI: true
+        run: npm test -- --runInBand --verbose
 
       - name: Upload coverage report
         if: success()
