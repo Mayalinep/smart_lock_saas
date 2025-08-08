@@ -25,7 +25,9 @@ class LockController {
         success: true,
         message: 'Statut de la serrure récupéré avec succès',
         data: {
-          lockStatus
+          // Compat: garder l'ancien nom et fournir aussi une clé unifiée
+          lockStatus,
+          lock: lockStatus
         }
       });
 

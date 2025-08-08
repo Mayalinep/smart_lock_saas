@@ -1,4 +1,5 @@
 const { verifyToken } = require('../utils/jwt');
+const { isBlacklisted } = require('../services/tokenBlacklist');
 const prisma = require('../config/database');
 
 /**
@@ -17,14 +18,22 @@ const authenticate = async (req, res, next) => {
       throw error;
     }
 
-    // 3. Utiliser verifyToken pour décoder le token
+    // 3. Vérifier blacklist
+    const blacklisted = await isBlacklisted(token);
+    if (blacklisted) {
+      const error = new Error('Token invalide');
+      error.status = 401;
+      throw error;
+    }
+
+    // 4. Utiliser verifyToken pour décoder le token
     const decoded = verifyToken(token);
 
-    // 4. Si verifyToken ne lance pas d'erreur, le token est valide
-    // 5. Attacher l'objet { userId: ... } à req.user
+    // 5. Si verifyToken ne lance pas d'erreur, le token est valide
+    // 6. Attacher l'objet { userId: ... } à req.user
     req.user = { userId: decoded.userId };
 
-    // 6. Appeler next() si tout est OK
+    // 7. Appeler next() si tout est OK
     next();
 
   } catch (error) {
@@ -62,13 +71,14 @@ const authorize = (allowedRoles = []) => {
  */
 const optionalAuth = async (req, res, next) => {
   try {
-    // TODO: Même logique que authenticate mais sans erreur si pas de token
-    // TODO: Si token valide, ajouter l'utilisateur à req.user
-    // TODO: Toujours appeler next()
-    
+    const token = req.cookies.token;
+    if (!token) return next();
+    const blacklisted = await isBlacklisted(token);
+    if (blacklisted) return next();
+    const decoded = verifyToken(token);
+    req.user = { userId: decoded.userId };
     next();
-  } catch (error) {
-    // On continue même en cas d'erreur
+  } catch (_) {
     next();
   }
 };

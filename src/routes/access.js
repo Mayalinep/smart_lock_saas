@@ -1,7 +1,7 @@
 const express = require('express');
 const AccessController = require('../controllers/accessController');
 const { authenticate, authorize } = require('../middleware/auth');
-const { validateRequest, createAccessSchema, accessIdParamSchema, propertyIdParamSchema } = require('../validators/schemas');
+const { validateRequest, createAccessSchema, accessIdParamSchema, propertyIdParamSchema, validateCodeSchema } = require('../validators/schemas');
 
 const router = express.Router();
 
@@ -10,7 +10,7 @@ const router = express.Router();
  */
 
 // Route publique pour validation des codes d'accès (utilisée par les serrures)
-router.post('/validate', AccessController.validateAccessCode);
+router.post('/validate', validateRequest(validateCodeSchema), AccessController.validateAccessCode);
 
 // Toutes les autres routes nécessitent une authentification
 router.use(authenticate);

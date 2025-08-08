@@ -217,14 +217,13 @@ class AccessController {
    */
   static async validateAccessCode(req, res, next) {
     try {
-      // TODO: Extraire le code d'accès et l'ID de propriété
-      // TODO: Appeler AccessService.validateAccessCode
-      // TODO: Retourner le résultat de validation
-
-      res.status(200).json({
-        success: true,
-        message: 'Controller validateAccessCode à implémenter',
-        data: { valid: false }
+      const { code, propertyId } = req.body;
+      const result = await AccessService.validateAccessCode(code, propertyId);
+      const statusCode = result.valid ? 200 : 401;
+      res.status(statusCode).json({
+        success: result.valid,
+        message: result.valid ? 'Code valide' : 'Code invalide',
+        data: result
       });
     } catch (error) {
       next(error);

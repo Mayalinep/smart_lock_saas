@@ -12,7 +12,8 @@ const {
   speedLimiter,
   registerLimiter,
   accessLimiter,
-  securityHeaders 
+  securityHeaders,
+  userRateLimit
 } = require('./src/middleware/security');
 const { logRequest, logError, logger } = require('./src/utils/logger');
 
@@ -61,9 +62,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Routes avec monitoring
+// Pour les routes authentifiées, on appliquera userRateLimit dans les routeurs ciblés si besoin
 app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
-app.use('/api/access', accessRoutes);
+// Applique rate-limit par utilisateur aux routes sensibles protégées
+app.use('/api/access', userRateLimit(process.env.NODE_ENV === 'production' ? 100 : 300), accessRoutes);
 app.use('/api/lock', lockRoutes);
 app.use('/api', healthRoutes);
 

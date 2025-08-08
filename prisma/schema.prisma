@@ -51,6 +51,7 @@ model Property {
 model Access {
   id          String   @id @default(cuid())
   code        String   @unique // Code d'accès unique
+  hashedCode  String?  // Hash du code (transition: nullable pour migration progressive)
   startDate   DateTime
   endDate     DateTime
   isActive    Boolean  @default(true)

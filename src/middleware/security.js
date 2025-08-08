@@ -2,6 +2,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const slowDown = require('express-slow-down');
+const { incrementAndGet } = require('../services/rateLimiter');
 
 // Configuration CORS
 const corsOptions = {
@@ -188,5 +189,35 @@ module.exports = {
   registerLimiter,
   accessLimiter,
   securityHeaders,
-  validateCSRF
+  validateCSRF,
+  // Middlewares personnalisés par utilisateur
+  loginRateLimit: async (req, res, next) => {
+    try {
+      const ip = req.ip || 'unknown';
+      const email = req.body?.email || 'unknown';
+      const key = `login:${email}:${ip}`;
+      const { allowed, remaining, resetSeconds } = await incrementAndGet(key, 60, process.env.NODE_ENV === 'production' ? 5 : 20);
+      if (!allowed) {
+        return res.status(429).json({ success: false, message: 'Trop de tentatives de connexion. Réessayez plus tard.', retryAfter: resetSeconds });
+      }
+      return next();
+    } catch (e) {
+      return next();
+    }
+  },
+  userRateLimit: (limitPerHour = 100) => {
+    return async (req, res, next) => {
+      try {
+        const userId = req.user?.userId || req.ip || 'anonymous';
+        const key = `user:${userId}`;
+        const { allowed, remaining, resetSeconds } = await incrementAndGet(key, 60 * 60, limitPerHour);
+        if (!allowed) {
+          return res.status(429).json({ success: false, message: 'Limite de requêtes par utilisateur atteinte. Réessayez plus tard.', retryAfter: resetSeconds });
+        }
+        return next();
+      } catch (e) {
+        return next();
+      }
+    };
+  }
 }; 

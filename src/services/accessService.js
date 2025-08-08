@@ -1,5 +1,6 @@
 const prisma = require('../config/database');
 const lockService = require('./lockService');
+const { hashAccessCode, compareAccessCode } = require('../utils/codeHash');
 
 /**
  * Service de gestion des accès
@@ -76,7 +77,7 @@ class AccessService {
     // 4. Générer un code d'accès unique
     const accessCode = await this.generateAccessCode(accessType);
 
-    // 5. Créer l'accès en base
+    // 5. Créer l'accès en base (avec hashage du code)
     const newAccess = await prisma.access.create({
       data: {
         propertyId,
@@ -86,6 +87,7 @@ class AccessService {
         endDate: end,
         accessType,
         code: accessCode,
+        hashedCode: hashAccessCode(accessCode),
         description: description || '',
         isActive: true
       },
@@ -400,13 +402,38 @@ class AccessService {
    * @returns {Object} Résultat de la validation
    */
   static async validateAccessCode(accessCode, propertyId) {
-    // TODO: Trouver l'accès par code et propriété
-    // TODO: Vérifier que l'accès est actif
-    // TODO: Vérifier les dates de validité
-    // TODO: Traiter les accès à usage unique
-    // TODO: Retourner le résultat de validation
+    const now = new Date();
 
-    throw new Error('Méthode validateAccessCode à implémenter');
+    // 1) Tenter de retrouver l'accès par code exact (legacy) OU par propriété
+    // On limite aux accès de la propriété donnée et non révoqués
+    const candidates = await prisma.access.findMany({
+      where: {
+        propertyId,
+        revokedAt: null,
+        isActive: true
+      }
+    });
+
+    // 2) Vérifier le code contre hashedCode (fallback sur code clair si présent)
+    const matched = candidates.find(a => {
+      if (a.hashedCode) return compareAccessCode(accessCode, a.hashedCode);
+      return a.code === accessCode; // compat legacy
+    });
+
+    if (!matched) {
+      return { valid: false, reason: 'CODE_INVALID' };
+    }
+
+    // 3) Vérifier fenêtre de validité
+    if (matched.startDate > now) {
+      return { valid: false, reason: 'NOT_STARTED' };
+    }
+    if (matched.endDate <= now) {
+      return { valid: false, reason: 'EXPIRED' };
+    }
+
+    // 4) OK
+    return { valid: true, accessId: matched.id, propertyId: matched.propertyId, userId: matched.userId };
   }
 
   /**

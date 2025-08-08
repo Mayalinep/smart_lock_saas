@@ -65,14 +65,13 @@ async function testLogout() {
 
   console.log('\n---\n');
 
-  // Étape 4: Vérifier qu'on ne peut plus accéder sans cookie (simule navigateur)
-  console.log('4️⃣ Test sans cookie (après logout - simule navigateur):');
+  // Étape 4: Vérifier qu'on ne peut plus accéder AVEC l'ancien token (blacklist)
+  console.log('4️⃣ Test avec ancien token (après logout - doit être refusé par blacklist):');
   try {
-    const response = await axios.get(PROTECTED_URL);
-    // Pas de headers Cookie = simule un navigateur qui a supprimé le cookie
-    console.log('❌ Problème: Accès autorisé sans token!');
+    await axios.get(PROTECTED_URL, { headers: { 'Cookie': cookies.join('; ') } });
+    console.log('❌ Problème: Accès autorisé avec token blacklité!');
   } catch (error) {
-    console.log('✅ Token bien invalidé - Erreur attendue:', error.response?.data.message);
+    console.log('✅ Ancien token refusé (attendu):', error.response?.status, error.response?.data?.message);
   }
 
   console.log('\n🎯 Test logout terminé !');

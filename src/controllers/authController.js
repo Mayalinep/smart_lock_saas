@@ -1,5 +1,7 @@
 const { AuthService, registerUser, loginUser } = require('../services/authService');
 const { getCookieOptions, generateToken } = require('../utils/jwt');
+const jwt = require('jsonwebtoken');
+const { add: addToBlacklist } = require('../services/tokenBlacklist');
 
 /**
  * Controller d'authentification
@@ -180,7 +182,10 @@ class AuthController {
    */
   static async logout(req, res, next) {
     try {
-      // 1. Supprimer le cookie token avec les options appropriées pour suppression
+      // 1. Récupérer le token courant s'il existe
+      const token = req.cookies.token;
+
+      // 2. Supprimer le cookie token avec les options appropriées pour suppression
       res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -188,7 +193,26 @@ class AuthController {
         path: '/' // Important : même path que lors de la création
       });
 
-      // 2. Retourner un message de succès  
+      // 3. Si on a un token, l'ajouter à la blacklist jusqu'à son expiration
+      if (token) {
+        try {
+          const decoded = jwt.decode(token);
+          // ttl = temps restant jusqu'à expiration, borné à 30 jours max dans le service
+          if (decoded && decoded.exp) {
+            const nowSec = Math.floor(Date.now() / 1000);
+            const ttl = Math.max(0, decoded.exp - nowSec);
+            if (ttl > 0) {
+              await addToBlacklist(token, ttl);
+            } else {
+              // Déjà expiré, rien à faire
+            }
+          }
+        } catch (_) {
+          // ignore erreurs de decode
+        }
+      }
+
+      // 4. Retourner un message de succès  
       res.status(200).json({
         success: true,
         message: 'Déconnexion réussie'

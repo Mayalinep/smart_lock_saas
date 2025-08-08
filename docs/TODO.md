@@ -11,12 +11,12 @@
 **Problème** : Codes stockés en plain text dans la DB (vulnérabilité critique)
 
 **Tâches :**
-- [ ] Modifier `prisma/schema.prisma` : ajouter `hashedCode: String` au modèle `Access`
-- [ ] Créer `src/utils/codeHash.js` avec fonctions `hashAccessCode()` et `compareAccessCode()`
-- [ ] Modifier `src/services/accessService.js` pour hasher à la création
-- [ ] Modifier validation de code pour comparer les hash
-- [ ] Migration Prisma : `npx prisma migrate dev --name hash_access_codes`
-- [ ] Tester avec script dédié
+- [x] Modifier `prisma/schema.prisma` : ajouter `hashedCode: String` au modèle `Access`
+- [x] Créer `src/utils/codeHash.js` avec fonctions `hashAccessCode()` et `compareAccessCode()`
+- [x] Modifier `src/services/accessService.js` pour hasher à la création
+- [x] Modifier validation de code pour comparer les hash
+- [x] Migration Prisma : `npx prisma migrate dev --name hash_access_codes`
+- [x] Tester avec script dédié
 
 **Impact** : 🔴 Critique - Faille sécurité majeure
 
@@ -26,12 +26,12 @@
 **Problème** : Déconnexion ne révoque pas le token (utilisable jusqu'à expiration)
 
 **Tâches :**
-- [ ] Installer Redis : `npm install redis`
-- [ ] Créer `src/services/tokenBlacklist.js`
-- [ ] Modifier `src/controllers/authController.js` : `logout` blackliste le token
-- [ ] Modifier `src/middleware/auth.js` : `authenticate` vérifie blacklist
-- [ ] Ajouter variables d'env Redis dans `.env`
-- [ ] Tester déconnexion + tentative réutilisation token
+- [x] Installer Redis : `npm install redis`
+- [x] Créer `src/services/tokenBlacklist.js`
+- [x] Modifier `src/controllers/authController.js` : `logout` blackliste le token
+- [x] Modifier `src/middleware/auth.js` : `authenticate` vérifie blacklist
+- [x] Ajouter variables d'env Redis dans `.env`
+- [x] Tester déconnexion + tentative réutilisation token
 
 **Impact** : 🔴 Critique - Sécurité auth compromise
 
@@ -41,12 +41,12 @@
 **Problème** : Rate limiting global seulement, pas de protection par utilisateur
 
 **Tâches :**
-- [ ] Modifier `src/middleware/security.js` 
-- [ ] Ajouter limitation par `userId` (ex: 100 req/h par user)
-- [ ] Limitation spéciale endpoints sensibles (login: 5/min)
-- [ ] Store Redis pour compteurs utilisateur
-- [ ] Tester avec script de charge
-- [ ] Messages d'erreur explicites
+- [x] Modifier `src/middleware/security.js` 
+- [x] Ajouter limitation par `userId` (ex: 100 req/h par user)
+- [x] Limitation spéciale endpoints sensibles (login: 5/min)
+- [x] Store Redis pour compteurs utilisateur
+- [x] Tester avec script de charge
+- [x] Messages d'erreur explicites
 
 **Impact** : 🟡 Important - Protection anti-abuse
 
