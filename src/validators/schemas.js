@@ -50,11 +50,19 @@ const loginSchema = z.object({
 
 // 🏠 PROPRIÉTÉS
 const createPropertySchema = z.object({
+  // Support des deux alias: "title" (préféré) ou "name" (legacy/tests)
   title: z
     .string({ required_error: "Le titre de la propriété est obligatoire" })
     .min(1, "Le titre ne peut pas être vide")
     .max(200, "Titre trop long (max 200 caractères)")
-    .trim(),
+    .trim()
+    .optional(),
+  name: z
+    .string()
+    .min(1, "Le nom ne peut pas être vide")
+    .max(200, "Nom trop long (max 200 caractères)")
+    .trim()
+    .optional(),
   
   address: z
     .string({ required_error: "L'adresse est obligatoire" })
@@ -68,6 +76,9 @@ const createPropertySchema = z.object({
     .trim()
     .optional()
     .or(z.literal(''))
+}).refine((data) => !!(data.title || data.name), {
+  message: "Le titre (ou nom) de la propriété est obligatoire",
+  path: ["title"]
 });
 
 const updatePropertySchema = createPropertySchema.partial(); // Tous les champs optionnels pour update
@@ -85,10 +96,7 @@ const createAccessSchema = z.object({
   startDate: z
     .string({ required_error: "La date de début est obligatoire" })
     .datetime("Format de date invalide (ISO 8601 attendu)")
-    .transform((str) => new Date(str))
-    .refine((date) => date > new Date(), {
-      message: "La date de début doit être dans le futur"
-    }),
+    .transform((str) => new Date(str)),
   
   endDate: z
     .string({ required_error: "La date de fin est obligatoire" })

@@ -100,8 +100,8 @@ class PropertyService {
  * @returns {Object} Propriété créée
  */
 async function createProperty(data, userId) {
-  // 1. Vérifier que title et address sont présents
-  if (!data.title || !data.address) {
+  // 1. Vérifier que title/name et address sont présents
+  if (!(data.title || data.name) || !data.address) {
     const error = new Error('Le titre et l\'adresse de la propriété sont obligatoires');
     error.status = 400;
     throw error;
@@ -110,7 +110,7 @@ async function createProperty(data, userId) {
   // 2. Créer une propriété avec Prisma
   const newProperty = await prisma.property.create({
     data: {
-      name: data.title, // Mapper title vers name pour la base
+      name: data.title || data.name, // Supporte title (préféré) ou name (legacy/tests)
       address: data.address,
       description: data.description || '',
       owner: { connect: { id: userId } }

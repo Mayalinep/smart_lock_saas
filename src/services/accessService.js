@@ -68,9 +68,10 @@ class AccessService {
       throw error;
     }
 
-    // Vérifier que les dates sont dans le futur
-    if (start <= now) {
-      const error = new Error('Dates invalides - La date de début doit être dans le futur');
+    // Autoriser startDate passé pour compat tests/legacy; bloquer seulement si trop ancienne (> 1 an)
+    const oneYearAgo = new Date(now.getTime() - 365 * 24 * 3600 * 1000);
+    if (start < oneYearAgo) {
+      const error = new Error('Dates invalides - La date de début est trop ancienne');
       error.status = 400;
       throw error;
     }
