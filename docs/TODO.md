@@ -5,6 +5,17 @@
 
 ---
 
+## ✅ Priorités immédiates (à exécuter)
+
+1. Webhooks temps réel signés + idempotency
+   - Signature HMAC (secret par webhook), Idempotency-Key, retry backoff, logs et métriques de delivery
+2. Docs Swagger finales
+   - Exemples exhaustifs, uniformisation 401/403 + schémas d'erreur, instructions cookies/CSRF, export OpenAPI JSON
+3. Alertes Prometheus
+   - Règles d’alerte latence p95, taux d’erreur, échecs email queue, Redis/DB down; doc Grafana optionnelle
+
+---
+
 ## 🔥 **CRITIQUE - SÉCURITÉ (À FAIRE ABSOLUMENT)**
 
 ### 1. ⚠️ **Hasher les codes d'accès** - URGENT
@@ -108,14 +119,14 @@
 **Problème** : Aucune notification pour événements importants
 
 **Tâches :**
-- [x] Service email : `nodemailer`
-- [x] Créer `src/services/notificationService.js`
-- [ ] Templates email (révocation, batterie faible, nouveau accès)
-- [x] Notification révocation d'accès (propriétaire + utilisateur)
-- [x] Notification batterie faible < 20%
-- [ ] Notification tentatives d'accès avec code expiré
-- [ ] Queue email avec retry (Bull + Redis)
-- [x] Configuration SMTP dans `.env.example`
+ - [x] Service email : `nodemailer`
+ - [x] Créer `src/services/notificationService.js`
+ - [ ] Templates email (révocation, batterie faible, nouveau accès)
+ - [x] Notification révocation d'accès (propriétaire + utilisateur)
+ - [x] Notification batterie faible < 20%
+ - [x] Notification tentatives d'accès avec code expiré
+ - [x] Queue email avec retry (Bull + Redis)
+ - [x] Configuration SMTP dans `.env.example`
 
 **Impact** : 🟠 Business - Expérience utilisateur
 
@@ -125,14 +136,14 @@
 **Problème** : Aucune visibilité sur performance et usage
 
 **Tâches :**
-- [ ] Installer Prometheus client : `npm install prom-client`
-- [ ] Créer `src/services/metricsService.js`
-- [ ] Métriques custom :
-  - Accès créés/jour par propriété
-  - Temps de réponse moyen par endpoint  
-  - Taux d'erreur par type
-  - Codes d'accès utilisés/jour
-- [ ] Endpoint `/metrics` pour Prometheus
+- [x] Installer Prometheus client : `npm install prom-client`
+- [x] Créer `src/services/metrics.js`
+- [x] Métriques custom :
+  - Accès créés/validations (par résultat)
+  - Temps de réponse par endpoint (histogramme)
+  - Taux d'erreur (via labels/status)
+  - Vérifications de statut serrure, emails envoyés/échoués
+- [x] Endpoint `/metrics` pour Prometheus
 - [ ] Dashboard Grafana (optionnel)
 - [ ] Alertes seuils critiques
 
@@ -144,13 +155,13 @@
 **Problème** : Logs console non structurés, difficiles à analyser
 
 **Tâches :**
-- [ ] Configurer Winston avec format JSON
-- [ ] Correlation IDs pour tracer requêtes
-- [ ] Logs par niveau (error, warn, info, debug)
-- [ ] Rotation automatique des fichiers logs
-- [ ] Masquage données sensibles (mots de passe, tokens)
+- [x] Configurer Winston avec format JSON
+- [x] Correlation IDs pour tracer requêtes
+- [x] Logs par niveau (error, warn, info, debug)
+- [x] Rotation automatique des fichiers logs
+- [x] Masquage données sensibles (mots de passe, tokens)
 - [ ] Centralisation logs (ELK stack en production)
-- [ ] Logs métriques (durée requêtes, erreurs)
+- [x] Logs métriques (durée requêtes, erreurs)
 
 **Impact** : 🟠 Observabilité - Debug production
 
@@ -182,33 +193,33 @@
 
 ### 12. 🧪 **Tests unitaires services** - QUALITÉ
 **Tâches :**
-- [ ] Setup Jest + supertest : `npm install --save-dev jest supertest`
-- [ ] Mocks Prisma avec `jest-mock-extended`
+- [x] Setup Jest + supertest : `npm install --save-dev jest supertest`
+- [x] Mocks Prisma avec `jest-mock-extended`
 - [ ] Tests unitaires tous les services
 - [ ] Coverage minimum 90%
-- [ ] CI/CD pipeline (GitHub Actions)
+- [x] CI/CD pipeline (GitHub Actions)
 - [ ] Tests E2E avec base de données test
 
 ---
 
 ### 13. 📚 **Documentation API** - DÉVELOPPEUR
 **Tâches :**
-- [ ] Swagger/OpenAPI : `npm install swagger-jsdoc swagger-ui-express`
+- [x] Swagger/OpenAPI : `npm install swagger-jsdoc swagger-ui-express`
 - [ ] Documentation auto-générée depuis code
-- [ ] Exemples requêtes/réponses
-- [ ] Guide d'intégration développeurs
-- [ ] Postman collection
+- [x] Exemples requêtes/réponses
+- [x] Guide d'intégration développeurs
+- [x] Postman collection
 - [ ] Versioning API
 
 ---
 
 ### 14. 🚀 **Déploiement production** - DEVOPS
 **Tâches :**
-- [ ] Dockerfile multi-stage
-- [ ] Docker Compose (app + Redis + PostgreSQL)
-- [ ] Variables d'environnement production
-- [ ] Health checks endpoints
-- [ ] Graceful shutdown
+- [x] Dockerfile multi-stage
+- [x] Docker Compose (app + Redis + PostgreSQL)
+- [x] Variables d'environnement production
+- [x] Health checks endpoints
+- [x] Graceful shutdown
 - [ ] Deploy Vercel/Railway/DigitalOcean
 
 ---

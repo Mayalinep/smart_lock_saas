@@ -57,3 +57,72 @@ curl -i -X POST http://localhost:3000/api/access \
 - 403: non autorisé (mauvais propriétaire)
 
 Bonne exploration !
+
+## Guide intégration front (fetch/axios)
+
+### 1) Se connecter (login) et stocker le cookie
+Le backend dépose un cookie httpOnly `token`. En navigateur, il est géré automatiquement si `credentials: 'include'` est utilisé.
+
+```javascript
+// fetch
+await fetch('http://localhost:3000/api/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include', // IMPORTANT pour envoyer/recevoir le cookie
+  body: JSON.stringify({ email, password })
+});
+
+// axios
+import axios from 'axios';
+const api = axios.create({ baseURL: 'http://localhost:3000/api', withCredentials: true });
+await api.post('/auth/login', { email, password });
+```
+
+### 2) Appeler des endpoints protégés
+```javascript
+// fetch
+const res = await fetch('http://localhost:3000/api/properties', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include',
+  body: JSON.stringify({ name: 'Appartement Canal', address: '12 Rue des Fleurs' })
+});
+
+// axios
+const { data } = await api.post('/properties', { name: 'Appartement Canal', address: '12 Rue des Fleurs' });
+```
+
+### 3) Gérer les erreurs 401 vs 403
+```javascript
+try {
+  await api.get(`/lock/status/${propertyId}`);
+} catch (err) {
+  if (err.response?.status === 401) {
+    // non authentifié → rediriger vers page de login
+  } else if (err.response?.status === 403) {
+    // authentifié mais interdit → afficher un message d'accès refusé
+  } else {
+    // autre erreur
+  }
+}
+```
+
+### 4) Pagination cursor-based côté front
+```javascript
+let cursor = null;
+do {
+  const { data } = await api.get(`/access/property/${propertyId}`, { params: { limit: 20, cursor } });
+  render(data.items);
+  cursor = data.nextCursor;
+} while (cursor);
+```
+
+### 5) Validation code d'accès (afficher messages)
+```javascript
+const { data } = await api.post('/access/validate', { code: '123456', propertyId });
+if (!data.valid) {
+  const map = { EXPIRED: 'Code expiré', NOT_STARTED: 'Pas encore actif', CODE_INVALID: 'Code invalide' };
+  showToast(map[data.reason] || 'Non valide');
+}
+```
+

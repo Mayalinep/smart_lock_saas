@@ -43,6 +43,20 @@ const lockStatusChecksTotal = new client.Counter({
 });
 register.registerMetric(lockStatusChecksTotal);
 
+// Emails (notifications)
+const emailSentTotal = new client.Counter({
+  name: 'business_email_sent_total',
+  help: 'Emails envoyés (par type)',
+  labelNames: ['type'] // accessRevoked | batteryLow | expiredAttempt
+});
+const emailFailedTotal = new client.Counter({
+  name: 'business_email_failed_total',
+  help: 'Emails échoués (par type)',
+  labelNames: ['type']
+});
+register.registerMetric(emailSentTotal);
+register.registerMetric(emailFailedTotal);
+
 // Middleware HTTP
 function httpMetricsMiddleware(req, res, next) {
   const method = req.method;
@@ -69,11 +83,21 @@ function incLockStatus(propertyId) {
   if (propertyId) lockStatusChecksTotal.inc({ propertyId });
 }
 
+function incEmailSent(type) {
+  emailSentTotal.inc({ type });
+}
+
+function incEmailFailed(type) {
+  emailFailedTotal.inc({ type });
+}
+
 module.exports = {
   register,
   httpMetricsMiddleware,
   incAccessCreated,
   incAccessValidate,
   incLockStatus,
+  incEmailSent,
+  incEmailFailed,
 };
 

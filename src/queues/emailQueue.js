@@ -12,6 +12,7 @@ if (isTest || !process.env.REDIS_URL) {
   };
 } else {
   const { Queue, Worker, QueueEvents, JobsOptions } = require('bullmq');
+  const metrics = require('../services/metrics');
   const IORedis = require('ioredis');
   const { notifyAccessRevoked, notifyBatteryLow, notifyExpiredAttempt } = require('../services/notificationService');
 
@@ -28,14 +29,22 @@ if (isTest || !process.env.REDIS_URL) {
     const { type, payload } = job.data || {};
     if (type === 'accessRevoked') {
       await notifyAccessRevoked(payload);
+      try { metrics.incEmailSent('accessRevoked'); } catch (_) {}
     } else if (type === 'batteryLow') {
       await notifyBatteryLow(payload);
+      try { metrics.incEmailSent('batteryLow'); } catch (_) {}
     } else if (type === 'expiredAttempt') {
       await notifyExpiredAttempt(payload);
+      try { metrics.incEmailSent('expiredAttempt'); } catch (_) {}
     }
   }, {
     connection,
     concurrency: 5,
+  });
+
+  worker.on('failed', (job) => {
+    const t = job?.data?.type || 'unknown';
+    try { metrics.incEmailFailed(t); } catch (_) {}
   });
 
   // Retry avec backoff exponentiel

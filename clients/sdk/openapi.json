@@ -1,0 +1,741 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Smart Lock SaaS API",
+    "version": "1.0.0",
+    "description": "Documentation API pour Smart Lock SaaS"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Local"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "token"
+      }
+    },
+    "schemas": {
+      "Access": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "propertyId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "accessType": {
+            "type": "string",
+            "enum": [
+              "TEMPORARY",
+              "PERMANENT"
+            ]
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string",
+            "description": "Masqué hors création"
+          }
+        },
+        "example": {
+          "id": "acc_123",
+          "propertyId": "prop_123",
+          "userId": "usr_456",
+          "accessType": "TEMPORARY",
+          "startDate": "2025-08-01T10:00:00.000Z",
+          "endDate": "2025-08-02T10:00:00.000Z",
+          "isActive": true
+        }
+      },
+      "LockEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "details": {
+            "type": "string"
+          }
+        }
+      },
+      "LockStatus": {
+        "type": "object",
+        "properties": {
+          "propertyId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "locked",
+              "unlocked",
+              "error"
+            ]
+          },
+          "lastActivity": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "batteryLevel": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ValidateCodeRequest": {
+        "type": "object",
+        "required": [
+          "code",
+          "propertyId"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "123456"
+          },
+          "propertyId": {
+            "type": "string"
+          }
+        }
+      },
+      "ValidateCodeResponse": {
+        "type": "object",
+        "properties": {
+          "valid": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "accessId": {
+            "type": "string"
+          },
+          "propertyId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "examples": {
+          "valid": {
+            "value": {
+              "valid": true,
+              "accessId": "acc_123",
+              "propertyId": "prop_123",
+              "userId": "usr_456"
+            }
+          },
+          "expired": {
+            "value": {
+              "valid": false,
+              "reason": "EXPIRED"
+            }
+          },
+          "not_started": {
+            "value": {
+              "valid": false,
+              "reason": "NOT_STARTED"
+            }
+          },
+          "invalid": {
+            "value": {
+              "valid": false,
+              "reason": "CODE_INVALID"
+            }
+          }
+        }
+      },
+      "PagedAccessResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Access"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "example": {
+          "items": [
+            {
+              "id": "acc_1",
+              "userId": "usr_1",
+              "propertyId": "prop_1",
+              "accessType": "TEMPORARY",
+              "startDate": "...",
+              "endDate": "..."
+            }
+          ],
+          "nextCursor": "acc_1",
+          "hasMore": true
+        }
+      },
+      "CreatePropertyRequest": {
+        "type": "object",
+        "required": [
+          "address"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "deprecated": true
+          },
+          "name": {
+            "type": "string",
+            "example": "Appartement Canal"
+          },
+          "address": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "name": "Appartement Canal",
+          "address": "12 Rue des Fleurs, Paris",
+          "description": "2 pièces"
+        }
+      },
+      "CreateAccessRequest": {
+        "type": "object",
+        "required": [
+          "propertyId",
+          "userId",
+          "startDate",
+          "endDate",
+          "accessType"
+        ],
+        "properties": {
+          "propertyId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "accessType": {
+            "type": "string",
+            "enum": [
+              "TEMPORARY",
+              "PERMANENT"
+            ]
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "propertyId": "prop_123",
+          "userId": "usr_guest",
+          "startDate": "2025-08-01T10:00:00.000Z",
+          "endDate": "2025-08-02T10:00:00.000Z",
+          "accessType": "TEMPORARY",
+          "description": "Accès livreur"
+        }
+      },
+      "LockEventsResponse": {
+        "type": "object",
+        "properties": {
+          "propertyId": {
+            "type": "string"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LockEvent"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "filteredBy": {
+            "type": "string"
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Inscription utilisateur",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password",
+                  "firstName",
+                  "lastName"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Créé"
+          },
+          "400": {
+            "description": "Erreur de validation (ex: mot de passe non conforme)"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login (dépose un cookie token)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Identifiants invalides"
+          },
+          "429": {
+            "description": "Trop de tentatives (rate limit)"
+          }
+        }
+      }
+    },
+    "/access/validate": {
+      "post": {
+        "tags": [
+          "Access"
+        ],
+        "summary": "Valider un code d'accès",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateCodeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Valide",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "valid": {
+                    "value": {
+                      "valid": true,
+                      "accessId": "acc_1",
+                      "propertyId": "prop_1",
+                      "userId": "usr_1"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non valide (NOT_STARTED, EXPIRED, CODE_INVALID)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateCodeResponse"
+                },
+                "examples": {
+                  "expired": {
+                    "value": {
+                      "valid": false,
+                      "reason": "EXPIRED"
+                    }
+                  },
+                  "not_started": {
+                    "value": {
+                      "valid": false,
+                      "reason": "NOT_STARTED"
+                    }
+                  },
+                  "invalid": {
+                    "value": {
+                      "valid": false,
+                      "reason": "CODE_INVALID"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/access/property/{propertyId}": {
+      "get": {
+        "tags": [
+          "Access"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "summary": "Liste des accès d'une propriété (cursor-based)",
+        "description": "Authentification requise. Envoyer le cookie d'authentification: `Cookie: token=...`",
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedAccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non authentifié (cookie manquant ou invalide)"
+          },
+          "403": {
+            "description": "Accès non autorisé à cette propriété"
+          }
+        }
+      }
+    },
+    "/access/my-accesses": {
+      "get": {
+        "tags": [
+          "Access"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "summary": "Accès de l'utilisateur connecté (cursor-based)",
+        "description": "Authentification requise. Envoyer le cookie d'authentification: `Cookie: token=...`",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedAccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non authentifié (cookie manquant ou invalide)"
+          }
+        }
+      }
+    },
+    "/lock/status/{propertyId}": {
+      "get": {
+        "tags": [
+          "Lock"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "summary": "Statut de la serrure",
+        "description": "Authentification requise. Envoyer le cookie d'authentification: `Cookie: token=...`",
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LockStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non authentifié (cookie manquant ou invalide)"
+          },
+          "403": {
+            "description": "Accès non autorisé à cette propriété"
+          }
+        }
+      }
+    },
+    "/lock/events/{propertyId}": {
+      "get": {
+        "tags": [
+          "Lock"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "summary": "Historique des événements (cursor-based)",
+        "description": "Authentification requise. Envoyer le cookie d'authentification: `Cookie: token=...`",
+        "parameters": [
+          {
+            "name": "propertyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LockEventsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non authentifié (cookie manquant ou invalide)"
+          },
+          "403": {
+            "description": "Accès non autorisé à cette propriété"
+          }
+        }
+      }
+    },
+    "/properties": {
+      "post": {
+        "tags": [
+          "Properties"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "summary": "Créer une propriété",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePropertyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Créée"
+          }
+        }
+      }
+    },
+    "/access": {
+      "post": {
+        "tags": [
+          "Access"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "summary": "Créer un accès",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAccessRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Créé"
+          }
+        }
+      }
+    }
+  },
+  "tags": []
+}

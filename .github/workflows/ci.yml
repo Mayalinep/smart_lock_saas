@@ -36,3 +36,10 @@ jobs:
           DATABASE_URL: file:./ci-test.db
         run: npm test --silent
 
+      - name: Upload coverage report
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+
