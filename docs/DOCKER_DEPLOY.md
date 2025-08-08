@@ -89,3 +89,24 @@ docker compose down -v
 - Activer stockage persistant sécurisé
 - Configurer reverse proxy (ex: Traefik, Nginx) et TLS
 
+### Git (SSH recommandé)
+Pour éviter des erreurs de push HTTP et renforcer la sécurité, utilise SSH:
+
+1) Générer une clé (si besoin)
+```
+ssh-keygen -t ed25519 -C "ton_email"
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+```
+
+2) Ajouter la clé publique à GitHub (Settings → SSH keys)
+```
+pbcopy < ~/.ssh/id_ed25519.pub
+```
+
+3) Basculer le remote et pousser
+```
+git remote set-url origin git@github.com:USERNAME/REPO.git
+git push origin master
+```
+
