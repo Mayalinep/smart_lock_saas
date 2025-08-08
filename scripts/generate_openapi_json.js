@@ -3,7 +3,7 @@
 */
 const fs = require('fs');
 const path = require('path');
-const { openapiSpec } = require('../src/docs/openapi');
+const { openapiSpec } = require('../src/docs/openapi.js');
 
 const outDir = path.resolve(__dirname, '..', 'clients', 'sdk');
 const outFile = path.join(outDir, 'openapi.json');

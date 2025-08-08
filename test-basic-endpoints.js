@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const BASE_URL = 'https://smart-lock-saas-f7w6uhgcc-mayas-projects-b1d345cf.vercel.app';
+const BASE_URL = 'https://smart-lock-saas-lol0l2i0d-mayas-projects-b1d345cf.vercel.app';
 
 async function testBasicEndpoints() {
     console.log('🔍 TESTS DES ENDPOINTS DE BASE');

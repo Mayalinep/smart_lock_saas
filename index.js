@@ -18,7 +18,7 @@ const {
 const { logRequest, logError, logger, requestIdMiddleware } = require('./src/utils/logger');
 const { httpMetricsMiddleware, register } = require('./src/services/metrics');
 const swaggerUi = require('swagger-ui-express');
-const { openapiSpec } = require('./src/docs/openapi');
+const { openapiSpec } = require('./src/docs/openapi.js');
 
 // Import des routes
 const authRoutes = require('./src/routes/auth');
