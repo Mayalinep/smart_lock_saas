@@ -3,7 +3,7 @@ const lockService = require('./lockService');
 const { hashAccessCode, compareAccessCode } = require('../utils/codeHash');
 const cache = require('./cache');
 const metrics = require('./metrics');
-const { notifyAccessRevoked } = require('./notificationService');
+const { enqueueAccessRevoked } = require('../queues/emailQueue');
 
 /**
  * Service de gestion des accès
@@ -424,7 +424,7 @@ class AccessService {
       const owner = await prisma.user.findUnique({ where: { id: ownerId } });
       const user = await prisma.user.findUnique({ where: { id: revokedAccess.userId } });
       const property = await prisma.property.findUnique({ where: { id: revokedAccess.propertyId } });
-      await notifyAccessRevoked({
+      await enqueueAccessRevoked({
         ownerEmail: owner?.email,
         userEmail: user?.email,
         propertyName: property?.name || property?.id,

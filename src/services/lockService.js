@@ -1,7 +1,7 @@
 // src/services/lockService.js
 
 const { PrismaClient } = require('@prisma/client');
-const { notifyBatteryLow } = require('./notificationService');
+const { enqueueBatteryLow } = require('../queues/emailQueue');
 const prisma = new PrismaClient();
 
 /**
@@ -126,7 +126,7 @@ module.exports = {
       try {
         const property = await prisma.property.findUnique({ where: { id: propertyId }, include: { owner: true } });
         if (property?.owner?.email) {
-          await notifyBatteryLow({ ownerEmail: property.owner.email, propertyName: property.name, batteryLevel });
+          await enqueueBatteryLow({ ownerEmail: property.owner.email, propertyName: property.name, batteryLevel });
         }
       } catch (_) {}
     }
