@@ -2,6 +2,7 @@ const prisma = require('../config/database');
 const lockService = require('./lockService');
 const { hashAccessCode, compareAccessCode } = require('../utils/codeHash');
 const cache = require('./cache');
+const metrics = require('./metrics');
 
 /**
  * Service de gestion des accès
@@ -140,7 +141,10 @@ class AccessService {
       await cache.del(`lock:status:${propertyId}`);
     } catch (_) {}
 
-    // 8. Retourner l'accès créé
+    // 8. Métriques business
+    try { metrics.incAccessCreated(propertyId); } catch (_) {}
+
+    // 9. Retourner l'accès créé
     return newAccess;
   }
 
@@ -459,18 +463,21 @@ class AccessService {
     });
 
     if (!matched) {
+      try { metrics.incAccessValidate('invalid'); } catch (_) {}
       return { valid: false, reason: 'CODE_INVALID' };
     }
 
     // 4) Vérifier fenêtre de validité
     if (matched.startDate > now) {
       const result = { valid: false, reason: 'NOT_STARTED' };
+      try { metrics.incAccessValidate('not_started'); } catch (_) {}
       // Cache court pour éviter marteau (TTL 60s)
       await cache.set(cacheKey, result, 60);
       return result;
     }
     if (matched.endDate <= now) {
       const result = { valid: false, reason: 'EXPIRED' };
+      try { metrics.incAccessValidate('expired'); } catch (_) {}
       await cache.set(cacheKey, result, 60);
       return result;
     }
@@ -479,6 +486,7 @@ class AccessService {
     const ttl = Math.min(24 * 3600, Math.max(1, Math.floor((matched.endDate - now) / 1000)));
     const result = { valid: true, accessId: matched.id, propertyId: matched.propertyId, userId: matched.userId };
     await cache.set(cacheKey, result, ttl);
+    try { metrics.incAccessValidate('valid'); } catch (_) {}
     return result;
   }
 
@@ -553,6 +561,7 @@ class AccessService {
     if (cached) return cached;
     const status = await lockService.getLockStatus(propertyId);
     await cache.set(cacheKey, status, 300); // 5 min
+    try { metrics.incLockStatus(propertyId); } catch (_) {}
     return status;
   }
 }
