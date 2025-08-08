@@ -47,3 +47,8 @@ GET /api/access/property/ckx123...abc?limit=20&cursor=ckx456...xyz
   - `@@index([userId, isActive])` (`accesses`)
   - `@@index([propertyId, timestamp])` (`lock_events`)
 - Cache invalide par motif lors des créations/suppressions d’accès: `access:property:${propertyId}*`
+
+## Performances observées (dev local)
+- `GET /api/access/property/:propertyId` (10 pages x 50): p50 ≈ 26 ms, p95 ≈ 36 ms, p99 ≈ 36 ms
+- `GET /api/lock/events/:propertyId` (10 pages x 50): p50 ≈ 45 ms, p95 ≈ 50 ms, p99 ≈ 50 ms
+- Remarque: les premières requêtes par page sont des miss cache; répéter la même page déclenche des hits.

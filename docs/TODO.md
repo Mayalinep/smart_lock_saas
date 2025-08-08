@@ -80,8 +80,8 @@
   - `GET /api/access/property/:id`
 - [x] Modifier schémas Zod pour cursors
 - [x] Ajouter `nextCursor` et `hasMore` dans réponses API
-- [ ] Tester avec datasets > 10k enregistrements
-- [ ] Documenter utilisation cursors
+- [x] Tester avec datasets > 10k enregistrements
+- [x] Documenter utilisation cursors (`docs/PAGINATION.md`)
 
 **Impact** : 🟡 Important - Scalabilité
 
@@ -237,18 +237,18 @@
 13. Documentation API
 14. Déploiement
 
----
+----
 
 ## 📊 **IMPACT ESTIMÉ**
 
-| Tâche | Temps | Difficulté | Impact Business | Impact Technique |
-|-------|-------|------------|-----------------|------------------|
-| Hash codes | 4h | Moyen | 🔴 Critique | 🔴 Critique |
-| Token blacklist | 6h | Moyen | 🔴 Critique | 🔴 Critique |
-| Rate limiting | 4h | Facile | 🟡 Important | 🟡 Important |
-| Index DB | 2h | Facile | 🟡 Important | 🟡 Important |
-| Cache Redis | 8h | Moyen | 🟡 Important | 🟡 Important |
-| Notifications | 12h | Difficile | 🟠 Business | 🟡 Important |
+| Tâche           | Temps | Difficulté | Impact Business | Impact Technique |
+|-----------------|-------|------------|-----------------|------------------|
+| Hash codes      | 4h    | Moyen      | 🔴 Critique | 🔴 Critique |
+| Token blacklist | 6h    | Moyen      | 🔴 Critique | 🔴 Critique |
+| Rate limiting   | 4h    | Facile | 🟡 Important | 🟡 Important |
+| Index DB        | 2h    | Facile | 🟡 Important | 🟡 Important |
+| Cache Redis     | 8h    | Moyen | 🟡 Important | 🟡 Important |
+| Notifications   | 12h | Difficile | 🟠 Business | 🟡 Important |
 
 ---
 
