@@ -98,6 +98,7 @@ groups:
 ## Grafana (optionnel)
 - Connecte la source Prometheus, crée des dashboards pour latence, taux d’erreurs, emails/webhooks.
 - Import possible de dashboards communautaires pour Node.js/Express.
+- Dashboard prêt: `monitoring/grafana-smartlock-dashboard.json` (datasource variable `Prometheus`).
 
 ## Déploiement & docker-compose (piste)
 Tu peux ajouter des services `prometheus` et `grafana` dans `docker-compose.yml` (optionnel). Exemple de cible pour Prometheus: `app:3000`, `metrics_path: /api/metrics`.
