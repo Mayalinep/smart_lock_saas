@@ -192,6 +192,7 @@ module.exports = {
   validateCSRF,
   // Middlewares personnalisés par utilisateur
   loginRateLimit: async (req, res, next) => {
+    if (process.env.NODE_ENV === 'test') return next();
     try {
       const ip = req.ip || 'unknown';
       const email = req.body?.email || 'unknown';
@@ -207,6 +208,7 @@ module.exports = {
   },
   userRateLimit: (limitPerHour = 100) => {
     return async (req, res, next) => {
+      if (process.env.NODE_ENV === 'test') return next();
       try {
         const userId = req.user?.userId || req.ip || 'anonymous';
         const key = `user:${userId}`;

@@ -4,6 +4,10 @@ const AccessService = require('../services/accessService');
  * Controller de gestion des accès
  */
 class AccessController {
+  static maskCode(value) {
+    if (!value) return value;
+    return '*'.repeat(String(value).length);
+  }
   /**
    * Création d'un nouvel accès pour une propriété
    * POST /api/access
@@ -62,11 +66,17 @@ class AccessController {
       // Appeler AccessService.getPropertyAccesses
       const accesses = await AccessService.getPropertyAccesses(propertyId, ownerId);
 
+      // Masquer les codes d'accès (pas d'exposition en clair)
+      const sanitized = accesses.map(a => ({
+        ...a,
+        code: AccessController.maskCode(a.code)
+      }));
+
       // Retourner la liste des accès
       res.status(200).json({
         success: true,
-        message: `${accesses.length} accès trouvé(s) pour cette propriété`,
-        data: { accesses }
+        message: `${sanitized.length} accès trouvé(s) pour cette propriété`,
+        data: { accesses: sanitized }
       });
     } catch (error) {
       next(error);
@@ -85,11 +95,17 @@ class AccessController {
       // Appeler AccessService.getUserAccesses
       const accesses = await AccessService.getUserAccesses(userId);
 
+      // Masquer les codes d'accès
+      const sanitized = accesses.map(a => ({
+        ...a,
+        code: AccessController.maskCode(a.code)
+      }));
+
       // Retourner la liste des accès de l'utilisateur
       res.status(200).json({
         success: true,
-        message: `${accesses.length} accès actif(s) trouvé(s)`,
-        data: { accesses }
+        message: `${sanitized.length} accès actif(s) trouvé(s)`,
+        data: { accesses: sanitized }
       });
     } catch (error) {
       next(error);
@@ -111,12 +127,15 @@ class AccessController {
       // Appeler AccessService.getPropertyAccessHistory
       const history = await AccessService.getPropertyAccessHistory(propertyId, ownerId);
 
+      // Masquer les codes d'accès
+      const sanitizedHistory = history.map(a => ({ ...a, code: AccessController.maskCode(a.code) }));
+
       // Statistiques pour le résumé
       const stats = {
-        total: history.length,
-        active: history.filter(a => a.status === 'ACTIF').length,
-        revoked: history.filter(a => a.status === 'RÉVOQUÉ').length,
-        inactive: history.filter(a => a.status === 'INACTIF').length
+        total: sanitizedHistory.length,
+        active: sanitizedHistory.filter(a => a.status === 'ACTIF').length,
+        revoked: sanitizedHistory.filter(a => a.status === 'RÉVOQUÉ').length,
+        inactive: sanitizedHistory.filter(a => a.status === 'INACTIF').length
       };
 
       // Retourner l'historique complet
@@ -124,7 +143,7 @@ class AccessController {
         success: true,
         message: `Historique complet: ${stats.total} accès (${stats.active} actifs, ${stats.revoked} révoqués)`,
         data: { 
-          history,
+          history: sanitizedHistory,
           statistics: stats
         }
       });
@@ -191,6 +210,9 @@ class AccessController {
       // Appeler AccessService.deleteAccessById (soft delete)
       const result = await AccessService.deleteAccessById(accessId, ownerId);
 
+      // Masquer le code dans la réponse
+      const masked = AccessController.maskCode(result.data.access.code);
+
       // Retourner le succès avec informations de traçabilité
       res.status(200).json({
         success: result.success,
@@ -200,7 +222,7 @@ class AccessController {
           revokedBy: result.data.revokedBy,
           access: {
             id: result.data.access.id,
-            code: result.data.access.code,
+            code: masked,
             user: result.data.access.user,
             property: result.data.access.property
           }

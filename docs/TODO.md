@@ -58,13 +58,13 @@
 **Problème** : Requêtes lentes sur gros datasets
 
 **Tâches :**
-- [ ] Analyser requêtes fréquentes avec `EXPLAIN QUERY PLAN`
-- [ ] Créer migration avec index :
+- [x] Analyser requêtes fréquentes avec `EXPLAIN QUERY PLAN`
+- [x] Créer migration avec index :
   - `(propertyId, isActive)` sur table `accesses`
   - `(userId, isActive)` sur table `accesses` 
   - `(propertyId, timestamp)` sur table `lock_events`
-- [ ] Tester performance avant/après avec datasets de test
-- [ ] Documenter stratégie d'indexation
+- [x] Tester performance avant/après avec datasets de test
+- [x] Documenter stratégie d'indexation
 
 **Impact** : 🟡 Important - Performance dégradée à l'échelle
 
@@ -91,11 +91,11 @@
 **Problème** : Requêtes DB répétées pour données peu changeantes
 
 **Tâches :**
-- [ ] Setup Redis pour cache (même instance que blacklist)
-- [ ] Cache codes d'accès actifs (TTL = durée validité)
-- [ ] Cache propriétés utilisateur (TTL = 1h)
-- [ ] Cache résultats `getLockStatus` (TTL = 5min)
-- [ ] Invalidation cache lors modifications
+- [x] Setup Redis pour cache (même instance que blacklist)
+- [x] Cache codes d'accès actifs (TTL = durée validité)
+- [x] Cache propriétés utilisateur (TTL = 1h)
+- [x] Cache résultats `getLockStatus` (TTL = 5min)
+- [x] Invalidation cache lors modifications
 - [ ] Métriques hit/miss ratio
 
 **Impact** : 🟡 Important - Performance + coûts DB

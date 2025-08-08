@@ -117,6 +117,9 @@ async function createProperty(data, userId) {
     }
   });
 
+  // Invalidation cache des propriétés de l'utilisateur
+  try { await cache.del(`user:${userId}:properties`); } catch (_) {}
+
   // 3. Retourner l'objet créé
   return newProperty;
 }
@@ -190,6 +193,9 @@ async function updateProperty(id, userId, data) {
     data: updateData
   });
 
+  // Invalidation cache
+  try { await cache.del(`user:${userId}:properties`); } catch (_) {}
+
   // 4. Retourner la propriété mise à jour
   return updatedProperty;
 }
@@ -212,6 +218,9 @@ async function deleteProperty(id, userId) {
   await prisma.property.delete({
     where: { id }
   });
+
+  // Invalidation cache
+  try { await cache.del(`user:${userId}:properties`); } catch (_) {}
 
   // 3. Retourner true pour confirmer la suppression
   return true;
@@ -237,6 +246,9 @@ async function togglePropertyStatus(id, userId, isActive) {
     where: { id },
     data: { isActive }
   });
+
+  // Invalidation cache
+  try { await cache.del(`user:${userId}:properties`); } catch (_) {}
 
   // 3. Retourner la propriété mise à jour
   return updatedProperty;
