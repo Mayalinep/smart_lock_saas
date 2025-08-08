@@ -1,5 +1,6 @@
 const winston = require('winston');
 const path = require('path');
+const { randomUUID } = require('crypto');
 
 // Configuration des formats de log
 const logFormat = winston.format.combine(
@@ -14,13 +15,17 @@ const transports = [
   new winston.transports.File({
     filename: path.join(__dirname, '../../logs/error.log'),
     level: 'error',
-    format: logFormat
+    format: logFormat,
+    maxsize: 10 * 1024 * 1024, // 10MB
+    maxFiles: 14
   }),
   
   // Tous les logs dans un fichier
   new winston.transports.File({
     filename: path.join(__dirname, '../../logs/combined.log'),
-    format: logFormat
+    format: logFormat,
+    maxsize: 10 * 1024 * 1024, // 10MB
+    maxFiles: 14
   })
 ];
 
@@ -45,6 +50,15 @@ const logger = winston.createLogger({
   exitOnError: false
 });
 
+// Middleware requestId (Correlation ID)
+const requestIdMiddleware = (req, res, next) => {
+  const existing = req.headers['x-request-id'];
+  const requestId = existing && typeof existing === 'string' ? existing : randomUUID();
+  req.requestId = requestId;
+  res.setHeader('X-Request-Id', requestId);
+  next();
+};
+
 // Fonctions utilitaires pour le logging
 const logRequest = (req, res, next) => {
   const start = Date.now();
@@ -52,6 +66,7 @@ const logRequest = (req, res, next) => {
   res.on('finish', () => {
     const duration = Date.now() - start;
     const logData = {
+      requestId: req.requestId || 'n/a',
       method: req.method,
       url: req.url,
       status: res.statusCode,
@@ -73,6 +88,7 @@ const logRequest = (req, res, next) => {
 
 const logError = (error, req, res, next) => {
   logger.error('Application Error', {
+    requestId: req.requestId || 'n/a',
     error: error.message,
     stack: error.stack,
     url: req.url,
@@ -86,6 +102,7 @@ const logError = (error, req, res, next) => {
 
 module.exports = {
   logger,
+  requestIdMiddleware,
   logRequest,
   logError
 }; 

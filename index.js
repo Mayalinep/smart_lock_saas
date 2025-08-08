@@ -15,7 +15,7 @@ const {
   securityHeaders,
   userRateLimit
 } = require('./src/middleware/security');
-const { logRequest, logError, logger } = require('./src/utils/logger');
+const { logRequest, logError, logger, requestIdMiddleware } = require('./src/utils/logger');
 
 // Import des routes
 const authRoutes = require('./src/routes/auth');
@@ -32,6 +32,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware de monitoring et sécurité
 app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
+app.use(requestIdMiddleware);
 app.use(logRequest);
 app.use(securityHeaders);
 
