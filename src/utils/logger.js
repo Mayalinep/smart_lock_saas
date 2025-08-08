@@ -10,27 +10,32 @@ const logFormat = winston.format.combine(
 );
 
 // Configuration des transports
-const transports = [
-  // Logs d'erreur dans un fichier
-  new winston.transports.File({
-    filename: path.join(__dirname, '../../logs/error.log'),
-    level: 'error',
-    format: logFormat,
-    maxsize: 10 * 1024 * 1024, // 10MB
-    maxFiles: 14
-  }),
-  
-  // Tous les logs dans un fichier
-  new winston.transports.File({
-    filename: path.join(__dirname, '../../logs/combined.log'),
-    format: logFormat,
-    maxsize: 10 * 1024 * 1024, // 10MB
-    maxFiles: 14
-  })
-];
+const transports = [];
 
-// En développement, afficher aussi dans la console
-if (process.env.NODE_ENV !== 'production') {
+// Ajouter les transports de fichiers seulement si on n'est pas sur Vercel
+if (process.env.VERCEL !== '1') {
+  transports.push(
+    // Logs d'erreur dans un fichier
+    new winston.transports.File({
+      filename: path.join(__dirname, '../../logs/error.log'),
+      level: 'error',
+      format: logFormat,
+      maxsize: 10 * 1024 * 1024, // 10MB
+      maxFiles: 14
+    }),
+    
+    // Tous les logs dans un fichier
+    new winston.transports.File({
+      filename: path.join(__dirname, '../../logs/combined.log'),
+      format: logFormat,
+      maxsize: 10 * 1024 * 1024, // 10MB
+      maxFiles: 14
+    })
+  );
+}
+
+// En développement ou sur Vercel, afficher dans la console
+if (process.env.NODE_ENV !== 'production' || process.env.VERCEL === '1') {
   transports.push(
     new winston.transports.Console({
       format: winston.format.combine(
