@@ -27,6 +27,7 @@ const accessRoutes = require('./src/routes/access');
 const lockRoutes = require('./src/routes/lock');
 const healthRoutes = require('./src/routes/health');
 const webhookRoutes = require('./src/routes/webhooks');
+const twoFactorRoutes = require('./src/routes/twoFactor');
 
 // Import du middleware d'erreur
 const { errorHandler } = require('./src/middleware/errorHandler');
@@ -75,6 +76,7 @@ app.use('/api/properties', propertyRoutes);
 app.use('/api/access', userRateLimit(process.env.NODE_ENV === 'production' ? 100 : 300), accessRoutes);
 app.use('/api/lock', lockRoutes);
 app.use('/api/webhooks', webhookRoutes);
+app.use('/api/2fa', twoFactorRoutes);
 app.use('/api', healthRoutes);
 
 // Expose Prometheus metrics (remplace contenu health /metrics si nécessaire)
