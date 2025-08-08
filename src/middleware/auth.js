@@ -53,15 +53,24 @@ const authenticate = async (req, res, next) => {
  */
 const authorize = (allowedRoles = []) => {
   return (req, res, next) => {
-    // TODO: Vérifier que req.user existe
-    // TODO: Vérifier que le rôle de l'utilisateur est dans allowedRoles
-    // TODO: Appeler next() ou renvoyer une erreur 403
-    
-    // Placeholder pour le développement
-    res.status(403).json({ 
-      success: false, 
-      message: 'Middleware d\'autorisation à implémenter' 
-    });
+    (async () => {
+      try {
+        if (!req.user?.userId) {
+          return res.status(401).json({ success: false, message: 'Non authentifié' });
+        }
+        if (!Array.isArray(allowedRoles) || allowedRoles.length === 0) {
+          return next();
+        }
+        const user = await prisma.user.findUnique({ where: { id: req.user.userId }, select: { role: true } });
+        const userRole = user?.role || 'USER';
+        if (!allowedRoles.includes(userRole)) {
+          return res.status(403).json({ success: false, message: 'Accès interdit' });
+        }
+        next();
+      } catch (err) {
+        return res.status(500).json({ success: false, message: 'Erreur autorisation' });
+      }
+    })();
   };
 };
 

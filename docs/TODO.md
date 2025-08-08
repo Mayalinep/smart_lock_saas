@@ -108,14 +108,14 @@
 **Problème** : Aucune notification pour événements importants
 
 **Tâches :**
-- [ ] Service email : `npm install nodemailer @sendgrid/mail`
-- [ ] Créer `src/services/notificationService.js`
+- [x] Service email : `nodemailer`
+- [x] Créer `src/services/notificationService.js`
 - [ ] Templates email (révocation, batterie faible, nouveau accès)
-- [ ] Notification révocation d'accès (propriétaire + utilisateur)
-- [ ] Notification batterie faible < 10%
+- [x] Notification révocation d'accès (propriétaire + utilisateur)
+- [x] Notification batterie faible < 20%
 - [ ] Notification tentatives d'accès avec code expiré
 - [ ] Queue email avec retry (Bull + Redis)
-- [ ] Configuration SMTP dans `.env`
+- [x] Configuration SMTP dans `.env.example`
 
 **Impact** : 🟠 Business - Expérience utilisateur
 
@@ -243,12 +243,12 @@
 
 | Tâche           | Temps | Difficulté | Impact Business | Impact Technique |
 |-----------------|-------|------------|-----------------|------------------|
-| Hash codes      | 4h    | Moyen      | 🔴 Critique | 🔴 Critique |
-| Token blacklist | 6h    | Moyen      | 🔴 Critique | 🔴 Critique |
-| Rate limiting   | 4h    | Facile | 🟡 Important | 🟡 Important |
-| Index DB        | 2h    | Facile | 🟡 Important | 🟡 Important |
-| Cache Redis     | 8h    | Moyen | 🟡 Important | 🟡 Important |
-| Notifications   | 12h | Difficile | 🟠 Business | 🟡 Important |
+| Hash codes      | 4h    | Moyen      | 🔴 Critique     | 🔴 Critique      |
+| Token blacklist | 6h    | Moyen      | 🔴 Critique     | 🔴 Critique      |
+| Rate limiting   | 4h    | Facile     | 🟡 Important    | 🟡 Important     |
+| Index DB        | 2h    | Facile     | 🟡 Important    | 🟡 Important     |
+| Cache Redis     | 8h    | Moyen      | 🟡 Important    | 🟡 Important     |
+| Notifications   | 12h   | Difficile  | 🟠 Business     | 🟡 Important     |
 
 ---
 
