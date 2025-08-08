@@ -26,6 +26,7 @@ const propertyRoutes = require('./src/routes/properties');
 const accessRoutes = require('./src/routes/access');
 const lockRoutes = require('./src/routes/lock');
 const healthRoutes = require('./src/routes/health');
+const webhookRoutes = require('./src/routes/webhooks');
 
 // Import du middleware d'erreur
 const { errorHandler } = require('./src/middleware/errorHandler');
@@ -73,6 +74,7 @@ app.use('/api/properties', propertyRoutes);
 // Applique rate-limit par utilisateur aux routes sensibles protégées
 app.use('/api/access', userRateLimit(process.env.NODE_ENV === 'production' ? 100 : 300), accessRoutes);
 app.use('/api/lock', lockRoutes);
+app.use('/api/webhooks', webhookRoutes);
 app.use('/api', healthRoutes);
 
 // Expose Prometheus metrics (remplace contenu health /metrics si nécessaire)
@@ -120,7 +122,9 @@ async function shutdown(signal) {
     // fermer Redis/queues si présents
     const cache = require('./src/services/cache');
     const { shutdownQueues } = require('./src/queues/emailQueue');
+    const { shutdownWebhookQueues } = require('./src/queues/webhookQueue');
     await shutdownQueues?.();
+    await shutdownWebhookQueues?.();
     await cache.quit?.();
   } catch (e) {
     logger.error('Erreur fermeture ressources', { error: e.message });

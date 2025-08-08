@@ -57,6 +57,27 @@ const emailFailedTotal = new client.Counter({
 register.registerMetric(emailSentTotal);
 register.registerMetric(emailFailedTotal);
 
+// Webhooks
+const webhookSentTotal = new client.Counter({
+  name: 'business_webhook_sent_total',
+  help: 'Webhooks envoyés (par type)',
+  labelNames: ['type']
+});
+const webhookFailedTotal = new client.Counter({
+  name: 'business_webhook_failed_total',
+  help: 'Webhooks échoués (par type)',
+  labelNames: ['type']
+});
+const webhookDeliverySeconds = new client.Histogram({
+  name: 'business_webhook_delivery_seconds',
+  help: 'Durée de livraison des webhooks (s)',
+  labelNames: ['type', 'status'],
+  buckets: [0.05,0.1,0.25,0.5,1,2,5,10]
+});
+register.registerMetric(webhookSentTotal);
+register.registerMetric(webhookFailedTotal);
+register.registerMetric(webhookDeliverySeconds);
+
 // Middleware HTTP
 function httpMetricsMiddleware(req, res, next) {
   const method = req.method;
@@ -99,5 +120,9 @@ module.exports = {
   incLockStatus,
   incEmailSent,
   incEmailFailed,
+  // Webhooks
+  incWebhookSent: (type) => webhookSentTotal.inc({ type }),
+  incWebhookFailed: (type) => webhookFailedTotal.inc({ type }),
+  observeWebhookDelivery: (type, status, seconds) => webhookDeliverySeconds.observe({ type, status }, seconds),
 };
 

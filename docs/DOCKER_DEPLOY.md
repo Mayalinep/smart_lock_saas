@@ -53,6 +53,30 @@ Puis reconstruire l’image.
 - API: `http://localhost:3000/api/...`
 - Swagger UI: `http://localhost:3000/api/docs/`
 
+### Optionnel: Observabilité locale (Prometheus + Grafana)
+
+Ajoute des services dans `docker-compose.yml` si tu souhaites tester:
+
+```yaml
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - app
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+```
+
+Configure la source Prometheus dans Grafana: `http://prometheus:9090`.
+
 ### Dépannage
 - Postgres ne démarre pas: supprime le volume `pgdata` si besoin
 ```

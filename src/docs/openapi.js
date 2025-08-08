@@ -104,6 +104,16 @@ const swaggerDefinition = {
           nextCursor: { type: 'string', nullable: true },
           hasMore: { type: 'boolean' }
         }
+      },
+      WebhookEndpoint: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          url: { type: 'string' },
+          events: { type: 'string' },
+          isActive: { type: 'boolean' },
+          createdAt: { type: 'string', format: 'date-time' }
+        }
       }
     }
   }
@@ -251,6 +261,45 @@ paths['/access'] = {
       content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateAccessRequest' } } }
     },
     responses: { '201': { description: 'Créé' } }
+  }
+};
+
+paths['/webhooks'] = {
+  get: {
+    tags: ['Webhooks'],
+    summary: 'Lister mes endpoints webhooks',
+    security: [{ cookieAuth: [] }],
+    responses: {
+      '200': { description: 'OK' },
+      '401': { description: 'Non authentifié' }
+    }
+  },
+  post: {
+    tags: ['Webhooks'],
+    summary: 'Créer un endpoint webhook',
+    security: [{ cookieAuth: [] }],
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { type: 'object', required: ['url','secret'], properties: { url: { type: 'string' }, secret: { type: 'string' }, events: { type: 'string' } } } } }
+    },
+    responses: {
+      '201': { description: 'Créé', content: { 'application/json': { schema: { $ref: '#/components/schemas/WebhookEndpoint' } } } },
+      '400': { description: 'Données invalides' },
+      '401': { description: 'Non authentifié' }
+    }
+  }
+};
+
+paths['/webhooks/{id}'] = {
+  delete: {
+    tags: ['Webhooks'],
+    summary: 'Supprimer un endpoint webhook',
+    security: [{ cookieAuth: [] }],
+    parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+    responses: {
+      '200': { description: 'OK' },
+      '401': { description: 'Non authentifié' }
+    }
   }
 };
 

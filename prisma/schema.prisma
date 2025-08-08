@@ -26,6 +26,7 @@ model User {
   ownedProperties Property[] @relation("PropertyOwner")
   accessGrants    Access[]   @relation("AccessUser")
   createdAccesses Access[]   @relation("AccessOwner")
+  webhookEndpoints WebhookEndpoint[]
 
   @@map("users")
 }
@@ -89,6 +90,23 @@ model LockEvent {
 
   @@map("lock_events")
   @@index([propertyId, timestamp], name: "idx_lock_events_property_ts")
+}
+
+model WebhookEndpoint {
+  id        String   @id @default(cuid())
+  url       String
+  secret    String
+  events    String?  // liste séparée par des virgules (ex: access_revoked,lock_battery_low)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relation optionnelle avec un propriétaire (User)
+  ownerId String?
+  owner   User?    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@map("webhook_endpoints")
+  @@index([ownerId])
 }
 
 // Enums remplacés par des String avec commentaires ci-dessus

@@ -4,6 +4,7 @@ const { hashAccessCode, compareAccessCode } = require('../utils/codeHash');
 const cache = require('./cache');
 const metrics = require('./metrics');
 const { enqueueAccessRevoked, enqueueExpiredAttempt } = require('../queues/emailQueue');
+const { dispatchEvent } = require('./webhookService');
 
 /**
  * Service de gestion des accès
@@ -431,6 +432,14 @@ class AccessService {
         code: revokedAccess.code,
         reason: 'Révocation manuelle par le propriétaire',
       });
+      // Webhook: access_revoked
+      const event = {
+        id: `evt_${revokedAccess.id}`,
+        type: 'access_revoked',
+        occurredAt: new Date().toISOString(),
+        data: { accessId: revokedAccess.id, propertyId: revokedAccess.propertyId, revokedBy: ownerId },
+      };
+      await dispatchEvent(event, ownerId);
     } catch (_) {}
 
     return result;
@@ -501,6 +510,14 @@ class AccessService {
         if (property?.owner?.email) {
           await enqueueExpiredAttempt({ ownerEmail: property.owner.email, propertyName: property.name });
         }
+        // Webhook: access_attempt_expired
+        const event = {
+          id: `evt_${matched.id}_${Math.floor(Date.now()/1000)}`,
+          type: 'access_attempt_expired',
+          occurredAt: new Date().toISOString(),
+          data: { accessId: matched.id, propertyId: matched.propertyId },
+        };
+        await dispatchEvent(event, property?.ownerId);
       } catch (_) {}
       await cache.set(cacheKey, result, 60);
       return result;

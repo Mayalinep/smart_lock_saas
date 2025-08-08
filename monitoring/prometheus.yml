@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 15s
+
+rule_files:
+  - alerts.yml
+
+scrape_configs:
+  - job_name: smart-lock-api
+    metrics_path: /api/metrics
+    static_configs:
+      # Utilise la cible qui fonctionne dans ton contexte (Docker ou local)
+      - targets: ["localhost:3000", "host.docker.internal:3000"]

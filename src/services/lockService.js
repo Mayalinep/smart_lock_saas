@@ -3,6 +3,7 @@
 const { PrismaClient } = require('@prisma/client');
 const { enqueueBatteryLow } = require('../queues/emailQueue');
 const prisma = new PrismaClient();
+const { dispatchEvent } = require('./webhookService');
 
 /**
  * Service de simulation de serrure connectée
@@ -128,6 +129,14 @@ module.exports = {
         if (property?.owner?.email) {
           await enqueueBatteryLow({ ownerEmail: property.owner.email, propertyName: property.name, batteryLevel });
         }
+        // Webhook: lock_battery_low
+        const event = {
+          id: `evt_bat_${propertyId}_${Math.floor(Date.now()/1000)}`,
+          type: 'lock_battery_low',
+          occurredAt: new Date().toISOString(),
+          data: { propertyId, batteryLevel },
+        };
+        await dispatchEvent(event, property?.ownerId);
       } catch (_) {}
     }
     
