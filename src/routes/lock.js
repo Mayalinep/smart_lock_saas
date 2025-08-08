@@ -3,7 +3,7 @@
 const express = require('express');
 const LockController = require('../controllers/lockController');
 const { authenticate } = require('../middleware/auth');
-const { validateRequest, propertyIdParamSchema } = require('../validators/schemas');
+const { validateRequest, propertyIdParamSchema, lockEventsQuerySchema } = require('../validators/schemas');
 
 const router = express.Router();
 
@@ -27,7 +27,8 @@ router.get('/lock-status/:propertyId',
 
 // Récupération de l'historique des événements d'une serrure
 router.get('/events/:propertyId', 
-  validateRequest(propertyIdParamSchema, 'params'), 
+  validateRequest(propertyIdParamSchema, 'params'),
+  validateRequest(lockEventsQuerySchema, 'query'),
   LockController.getLockEvents
 );
 

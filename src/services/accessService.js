@@ -136,7 +136,7 @@ class AccessService {
 
     // 7. Invalider cache lié à la propriété (listes d'accès et lock status)
     try {
-      await cache.del(`access:property:${propertyId}`);
+      await cache.delByPattern(`access:property:${propertyId}*`);
       await cache.del(`lock:status:${propertyId}`);
     } catch (_) {}
 
@@ -150,7 +150,7 @@ class AccessService {
    * @param {string} ownerId - ID du propriétaire
    * @returns {Array} Liste des accès
    */
-  static async getPropertyAccesses(propertyId, ownerId) {
+  static async getPropertyAccesses(propertyId, ownerId, options = {}) {
     // 1. Vérifier que l'utilisateur est propriétaire de la propriété
     const property = await prisma.property.findFirst({
       where: {
@@ -165,17 +165,26 @@ class AccessService {
       throw error;
     }
 
-    // 2. Cache: liste des accès d'une propriété
-    const cacheKey = `access:property:${propertyId}`;
+    // 2. Pagination
+    const cursor = options.cursor || null;
+    const limit = Math.max(1, Math.min(parseInt(options.limit || 20, 10), 100));
+
+    // 3. Cache par page
+    const cacheKey = `access:property:${propertyId}:cursor:${cursor || 'START'}:limit:${limit}`;
     const cached = await cache.getWithMiss(cacheKey);
     if (cached) return cached;
 
     // 3. Récupérer tous les accès de la propriété avec les infos utilisateur
+    const whereClause = {
+      propertyId: propertyId,
+      revokedAt: null
+    };
+    if (cursor) {
+      whereClause.id = { lt: cursor };
+    }
+
     const accesses = await prisma.access.findMany({
-      where: {
-        propertyId: propertyId,
-        revokedAt: null       // Exclure les accès révoqués (soft delete)
-      },
+      where: whereClause,
       include: {
         user: {
           select: {
@@ -186,16 +195,20 @@ class AccessService {
           }
         }
       },
-      orderBy: {
-        createdAt: 'desc' // Tri par date de création décroissant
-      }
+      orderBy: { id: 'desc' },
+      take: limit
     });
 
-    // 4. Mettre en cache (TTL 10 min)
-    await cache.set(cacheKey, accesses, 600);
+    // 4. Préparer pagination
+    const nextCursor = accesses.length === limit ? accesses[accesses.length - 1].id : null;
+    const hasMore = Boolean(nextCursor);
+    const result = { items: accesses, nextCursor, hasMore };
 
-    // 5. Retourner la liste des accès trouvés
-    return accesses;
+    // 5. Mettre en cache (TTL 10 min)
+    await cache.set(cacheKey, result, 600);
+
+    // 6. Retourner la page
+    return result;
   }
 
   /**
@@ -203,19 +216,23 @@ class AccessService {
    * @param {string} userId - ID de l'utilisateur
    * @returns {Array} Liste des accès de l'utilisateur
    */
-  static async getUserAccesses(userId) {
+  static async getUserAccesses(userId, options = {}) {
     const now = new Date();
+    const cursor = options.cursor || null;
+    const limit = Math.max(1, Math.min(parseInt(options.limit || 20, 10), 100));
 
-    // Récupérer tous les accès de l'utilisateur avec filtres
+    const whereClause = {
+      userId: userId,
+      isActive: true,
+      revokedAt: null,
+      endDate: { gt: now }
+    };
+    if (cursor) {
+      whereClause.id = { lt: cursor };
+    }
+
     const accesses = await prisma.access.findMany({
-      where: {
-        userId: userId,
-        isActive: true,        // Accès actifs seulement
-        revokedAt: null,       // Exclure les accès révoqués (soft delete)
-        endDate: {            // Date de fin dans le futur
-          gt: now
-        }
-      },
+      where: whereClause,
       include: {
         property: {
           select: {
@@ -224,13 +241,13 @@ class AccessService {
           }
         }
       },
-      orderBy: {
-        endDate: 'asc' // Tri par date de fin croissante (plus urgent en premier)
-      }
+      orderBy: { id: 'desc' },
+      take: limit
     });
 
-    // Retourner la liste des accès avec format souhaité
-    return accesses;
+    const nextCursor = accesses.length === limit ? accesses[accesses.length - 1].id : null;
+    const hasMore = Boolean(nextCursor);
+    return { items: accesses, nextCursor, hasMore };
   }
 
   /**

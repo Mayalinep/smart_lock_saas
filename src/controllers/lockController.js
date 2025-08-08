@@ -60,7 +60,7 @@ class LockController {
     try {
       const { propertyId } = req.params;
       const { userId } = req.user;
-      const { type, limit = 50 } = req.query;
+      const { type, cursor, limit } = req.query;
 
       // Vérifier que l'utilisateur est propriétaire de la propriété
       const property = await prisma.property.findUnique({
@@ -76,21 +76,17 @@ class LockController {
 
       // Construire la requête avec filtrage optionnel par type
       const whereClause = { propertyId };
-      if (type) {
-        whereClause.type = type;
-      }
+      if (type) whereClause.type = type;
+      if (cursor) whereClause.id = { lt: cursor };
 
-      // Récupérer les événements
+      const take = Math.max(1, Math.min(parseInt(limit, 10) || 20, 100));
+
+      // Récupérer les événements triés par id décroissant (cursorage stable)
       const events = await prisma.lockEvent.findMany({
         where: whereClause,
-        orderBy: { timestamp: 'desc' },
-        take: parseInt(limit),
-        select: {
-          id: true,
-          type: true,
-          timestamp: true,
-          details: true
-        }
+        orderBy: { id: 'desc' },
+        take,
+        select: { id: true, type: true, timestamp: true, details: true }
       });
 
       res.status(200).json({
@@ -100,7 +96,9 @@ class LockController {
           propertyId,
           events,
           total: events.length,
-          filteredBy: type || 'tous'
+          filteredBy: type || 'tous',
+          nextCursor: events.length === take ? events[events.length - 1].id : null,
+          hasMore: events.length === take
         }
       });
 

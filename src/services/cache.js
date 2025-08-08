@@ -65,6 +65,23 @@ async function del(key) {
   memoryStore.delete(key);
 }
 
+async function delByPattern(pattern) {
+  await init();
+  if (isRedisReady && redisClient) {
+    // SCAN pour éviter KEYS en prod
+    const iter = redisClient.scanIterator({ MATCH: pattern, COUNT: 100 });
+    for await (const key of iter) {
+      await redisClient.del(key);
+    }
+    return;
+  }
+  for (const key of Array.from(memoryStore.keys())) {
+    if (key.includes(pattern.replace(/\*/g, ''))) {
+      memoryStore.delete(key);
+    }
+  }
+}
+
 function getMetrics() {
   const total = counters.hits + counters.misses;
   const hitRate = total > 0 ? (counters.hits / total) : 0;
@@ -82,6 +99,7 @@ module.exports = {
   getWithMiss,
   set,
   del,
+  delByPattern,
   getMetrics,
 };
 

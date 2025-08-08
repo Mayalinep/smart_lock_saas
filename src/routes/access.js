@@ -1,7 +1,7 @@
 const express = require('express');
 const AccessController = require('../controllers/accessController');
 const { authenticate, authorize } = require('../middleware/auth');
-const { validateRequest, createAccessSchema, accessIdParamSchema, propertyIdParamSchema, validateCodeSchema } = require('../validators/schemas');
+const { validateRequest, createAccessSchema, accessIdParamSchema, propertyIdParamSchema, validateCodeSchema, cursorPaginationSchema } = require('../validators/schemas');
 
 const router = express.Router();
 
@@ -19,12 +19,17 @@ router.use(authenticate);
 router.post('/', validateRequest(createAccessSchema), AccessController.createAccess);
 
 // Récupération des accès de l'utilisateur connecté
-router.get('/my-accesses', AccessController.getUserAccesses);
+router.get('/my-accesses', 
+  validateRequest(cursorPaginationSchema, 'query'),
+  AccessController.getUserAccesses
+);
 
 // Récupération des accès pour une propriété spécifique (avec validation ID)
 router.get('/property/:propertyId', 
-  validateRequest(propertyIdParamSchema, 'params'), 
-  AccessController.getPropertyAccesses);
+  validateRequest(propertyIdParamSchema, 'params'),
+  validateRequest(cursorPaginationSchema, 'query'),
+  AccessController.getPropertyAccesses
+);
 
 // Récupération de l'historique complet d'une propriété (avec validation ID)
 router.get('/property/:propertyId/history', 

@@ -63,11 +63,14 @@ class AccessController {
       // Récupérer l'ID utilisateur depuis req.user (propriétaire)
       const ownerId = req.user.userId;
 
+      // Paramètres de pagination
+      const { cursor, limit } = req.query;
+
       // Appeler AccessService.getPropertyAccesses
-      const accesses = await AccessService.getPropertyAccesses(propertyId, ownerId);
+      const { items, nextCursor, hasMore } = await AccessService.getPropertyAccesses(propertyId, ownerId, { cursor, limit });
 
       // Masquer les codes d'accès (pas d'exposition en clair)
-      const sanitized = accesses.map(a => ({
+      const sanitized = items.map(a => ({
         ...a,
         code: AccessController.maskCode(a.code)
       }));
@@ -76,7 +79,7 @@ class AccessController {
       res.status(200).json({
         success: true,
         message: `${sanitized.length} accès trouvé(s) pour cette propriété`,
-        data: { accesses: sanitized }
+        data: { accesses: sanitized, nextCursor, hasMore }
       });
     } catch (error) {
       next(error);
@@ -92,11 +95,14 @@ class AccessController {
       // Récupérer l'ID utilisateur depuis req.user
       const userId = req.user.userId;
 
+      // Paramètres de pagination
+      const { cursor, limit } = req.query;
+
       // Appeler AccessService.getUserAccesses
-      const accesses = await AccessService.getUserAccesses(userId);
+      const { items, nextCursor, hasMore } = await AccessService.getUserAccesses(userId, { cursor, limit });
 
       // Masquer les codes d'accès
-      const sanitized = accesses.map(a => ({
+      const sanitized = items.map(a => ({
         ...a,
         code: AccessController.maskCode(a.code)
       }));
@@ -105,7 +111,7 @@ class AccessController {
       res.status(200).json({
         success: true,
         message: `${sanitized.length} accès actif(s) trouvé(s)`,
-        data: { accesses: sanitized }
+        data: { accesses: sanitized, nextCursor, hasMore }
       });
     } catch (error) {
       next(error);

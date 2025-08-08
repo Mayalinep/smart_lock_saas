@@ -141,19 +141,23 @@ const validateCodeSchema = z.object({
     .cuid("Format d'ID de propriété invalide")
 });
 
-// 📊 PAGINATION (pour futures améliorations)
-const paginationSchema = z.object({
-  page: z
+// 📊 PAGINATION CURSEUR (cursor-based)
+const cursorPaginationSchema = z.object({
+  cursor: z
     .string()
-    .transform((val) => parseInt(val, 10))
-    .refine((val) => val > 0, "La page doit être supérieure à 0")
-    .default("1"),
-  
+    .cuid("Format de curseur invalide")
+    .optional(),
+
   limit: z
     .string()
+    .default("20")
     .transform((val) => parseInt(val, 10))
     .refine((val) => val > 0 && val <= 100, "La limite doit être entre 1 et 100")
-    .default("20")
+});
+
+// Spécifique lock events: pagination + filtre type
+const lockEventsQuerySchema = cursorPaginationSchema.extend({
+  type: z.string().optional()
 });
 
 // 🆔 PARAMÈTRES COMMUNS
@@ -217,7 +221,8 @@ module.exports = {
   updatePropertySchema,
   createAccessSchema,
   validateCodeSchema,
-  paginationSchema,
+  cursorPaginationSchema,
+  lockEventsQuerySchema,
   cuidParamSchema,
   accessIdParamSchema,
   propertyIdParamSchema,
