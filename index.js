@@ -18,7 +18,95 @@ const {
 const { logRequest, logError, logger, requestIdMiddleware } = require('./src/utils/logger');
 const { httpMetricsMiddleware, register } = require('./src/services/metrics');
 const swaggerUi = require('swagger-ui-express');
-const { openapiSpec } = require('./src/docs/openapi.js');
+// Configuration OpenAPI simplifiée pour Vercel
+const openapiSpec = {
+  openapi: '3.0.3',
+  info: {
+    title: 'Smart Lock SaaS API',
+    version: '1.0.0',
+    description: 'Documentation API pour Smart Lock SaaS',
+  },
+  servers: [
+    { url: 'http://localhost:3000/api', description: 'Local' },
+  ],
+  components: {
+    securitySchemes: {
+      cookieAuth: { type: 'apiKey', in: 'cookie', name: 'token' }
+    },
+    schemas: {
+      ErrorResponse: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', example: false },
+          message: { type: 'string', example: 'Non authentifié' }
+        }
+      }
+    }
+  },
+  paths: {
+    '/health': {
+      get: {
+        tags: ['Health'],
+        summary: 'Vérification de la santé de l\'API',
+        responses: {
+          '200': { description: 'OK' }
+        }
+      }
+    },
+    '/auth/register': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Inscription utilisateur',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['email', 'password', 'firstName', 'lastName'],
+                properties: {
+                  email: { type: 'string', format: 'email' },
+                  password: { type: 'string', minLength: 8 },
+                  firstName: { type: 'string' },
+                  lastName: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '201': { description: 'Utilisateur créé' },
+          '409': { description: 'Email déjà utilisé' }
+        }
+      }
+    },
+    '/auth/login': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Connexion utilisateur',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['email', 'password'],
+                properties: {
+                  email: { type: 'string', format: 'email' },
+                  password: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': { description: 'Connexion réussie' },
+          '401': { description: 'Identifiants invalides' }
+        }
+      }
+    }
+  }
+};
 
 // Import des routes
 const authRoutes = require('./src/routes/auth');
