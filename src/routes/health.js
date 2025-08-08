@@ -1,5 +1,6 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
+const cache = require('../services/cache');
 const { logger } = require('../utils/logger');
 
 const router = express.Router();
@@ -79,6 +80,8 @@ router.get('/health/detailed', async (req, res) => {
 router.get('/metrics', (req, res) => {
   const memoryUsage = process.memoryUsage();
   
+  const cacheMetrics = cache.getMetrics();
+
   const metrics = `# HELP nodejs_heap_size_total Process heap size from Node.js in bytes.
 # TYPE nodejs_heap_size_total gauge
 nodejs_heap_size_total ${memoryUsage.heapTotal}
@@ -99,8 +102,22 @@ nodejs_process_cpu_seconds_total ${process.cpuUsage().user / 1000000}
 # TYPE nodejs_process_start_time_seconds gauge
 nodejs_process_start_time_seconds ${process.uptime()}`;
 
+  const cacheSection = `
+\n# HELP app_cache_hits Total cache hits
+# TYPE app_cache_hits counter
+app_cache_hits ${cacheMetrics.hits}
+
+# HELP app_cache_misses Total cache misses
+# TYPE app_cache_misses counter
+app_cache_misses ${cacheMetrics.misses}
+
+# HELP app_cache_hit_rate Cache hit rate (0-1)
+# TYPE app_cache_hit_rate gauge
+app_cache_hit_rate ${cacheMetrics.hitRate}
+`;
+
   res.set('Content-Type', 'text/plain');
-  res.send(metrics);
+  res.send(metrics + cacheSection);
 });
 
 module.exports = router; 

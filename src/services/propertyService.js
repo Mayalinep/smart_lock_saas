@@ -132,7 +132,7 @@ async function createProperty(data, userId) {
 async function getUserProperties(userId) {
   // 1. Cache 1h
   const cacheKey = `user:${userId}:properties`;
-  const cached = await cache.get(cacheKey);
+  const cached = await cache.getWithMiss(cacheKey);
   if (cached) return cached;
 
   // 2. Utiliser Prisma pour récupérer toutes les propriétés liées à l'utilisateur

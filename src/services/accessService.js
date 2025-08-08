@@ -167,7 +167,7 @@ class AccessService {
 
     // 2. Cache: liste des accès d'une propriété
     const cacheKey = `access:property:${propertyId}`;
-    const cached = await cache.get(cacheKey);
+    const cached = await cache.getWithMiss(cacheKey);
     if (cached) return cached;
 
     // 3. Récupérer tous les accès de la propriété avec les infos utilisateur
@@ -422,7 +422,7 @@ class AccessService {
 
     // 1) Cache: validation par code
     const cacheKey = `access:validate:${propertyId}:${accessCode}`;
-    const cached = await cache.get(cacheKey);
+    const cached = await cache.getWithMiss(cacheKey);
     if (cached) return cached;
 
     // 2) Tenter de retrouver l'accès par code exact (legacy) OU par propriété

@@ -23,6 +23,7 @@ async function init() {
 
 // Fallback mémoire: Map<key, { value: any, expiresAt: number }>
 const memoryStore = new Map();
+const counters = { hits: 0, misses: 0 };
 
 function nowSec() { return Math.floor(Date.now() / 1000); }
 
@@ -31,6 +32,7 @@ async function get(key) {
   if (isRedisReady && redisClient) {
     const data = await redisClient.get(key);
     if (data == null) return null;
+    counters.hits++;
     try { return JSON.parse(data); } catch { return null; }
   }
   const entry = memoryStore.get(key);
@@ -39,6 +41,7 @@ async function get(key) {
     memoryStore.delete(key);
     return null;
   }
+  counters.hits++;
   return entry.value;
 }
 
@@ -62,9 +65,23 @@ async function del(key) {
   memoryStore.delete(key);
 }
 
+function getMetrics() {
+  const total = counters.hits + counters.misses;
+  const hitRate = total > 0 ? (counters.hits / total) : 0;
+  return { ...counters, hitRate };
+}
+
+async function getWithMiss(key) {
+  const val = await get(key);
+  if (val === null) counters.misses++;
+  return val;
+}
+
 module.exports = {
   get,
+  getWithMiss,
   set,
   del,
+  getMetrics,
 };
 
