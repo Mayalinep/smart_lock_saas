@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "index.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "installCommand": "./vercel-build.sh"
+      }
     }
   ],
   "routes": [
@@ -15,7 +18,5 @@
   "env": {
     "NODE_ENV": "production",
     "VERCEL": "1"
-  },
-  "buildCommand": "npm run build",
-  "installCommand": "npm install && npx prisma generate"
+  }
 } 
