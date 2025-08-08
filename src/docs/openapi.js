@@ -64,6 +64,13 @@ const swaggerDefinition = {
           userId: { type: 'string' }
         }
       },
+      ErrorResponse: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', example: false },
+          message: { type: 'string', example: 'Non authentifié' }
+        }
+      },
       PagedAccessResponse: {
         type: 'object',
         properties: {
@@ -142,7 +149,7 @@ const paths = {
           }
         }
       },
-      responses: { '201': { description: 'Créé' } }
+      responses: { '201': { description: 'Créé' }, '401': { description: 'Non authentifié', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } } }
     }
   },
   '/auth/login': {
@@ -164,7 +171,7 @@ const paths = {
           }
         }
       },
-      responses: { '200': { description: 'OK' } }
+      responses: { '200': { description: 'OK' }, '401': { description: 'Non authentifié', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } } }
     }
   },
   '/access/validate': {
@@ -176,7 +183,10 @@ const paths = {
         content: { 'application/json': { schema: { $ref: '#/components/schemas/ValidateCodeRequest' } } }
       },
       responses: {
-        '200': { description: 'Résultat validation', content: { 'application/json': { schema: { $ref: '#/components/schemas/ValidateCodeResponse' } } } }
+        '200': { description: 'Résultat validation', content: { 'application/json': { schema: { $ref: '#/components/schemas/ValidateCodeResponse' } } } },
+        '400': { description: 'Données invalides', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
+        '401': { description: 'Non authentifié', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
+        '403': { description: 'Accès interdit', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
       }
     }
   },
@@ -191,7 +201,9 @@ const paths = {
         { name: 'cursor', in: 'query', required: false, schema: { type: 'string' } }
       ],
       responses: {
-        '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/PagedAccessResponse' } } } }
+        '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/PagedAccessResponse' } } } },
+        '401': { description: 'Non authentifié', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
+        '403': { description: 'Accès interdit', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
       }
     }
   },
@@ -205,7 +217,8 @@ const paths = {
         { name: 'cursor', in: 'query', required: false, schema: { type: 'string' } }
       ],
       responses: {
-        '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/PagedAccessResponse' } } } }
+        '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/PagedAccessResponse' } } } },
+        '401': { description: 'Non authentifié', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
       }
     }
   },
@@ -216,7 +229,9 @@ const paths = {
       summary: 'Statut de la serrure',
       parameters: [ { name: 'propertyId', in: 'path', required: true, schema: { type: 'string' } } ],
       responses: {
-        '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/LockStatus' } } } }
+        '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/LockStatus' } } } },
+        '401': { description: 'Non authentifié', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
+        '403': { description: 'Accès interdit', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
       }
     }
   },
@@ -232,7 +247,9 @@ const paths = {
         { name: 'cursor', in: 'query', required: false, schema: { type: 'string' } }
       ],
       responses: {
-        '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/LockEventsResponse' } } } }
+        '200': { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/LockEventsResponse' } } } },
+        '401': { description: 'Non authentifié', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
+        '403': { description: 'Accès interdit', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } }
       }
     }
   }

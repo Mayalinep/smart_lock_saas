@@ -21,10 +21,21 @@ async function deleteEndpoint(id, ownerId) {
   return prisma.webhookEndpoint.deleteMany({ where: { id, OR: [{ ownerId }, { ownerId: null }] } });
 }
 
+function parseEventsList(csv) {
+  if (!csv || typeof csv !== 'string') return null; // null = tous les événements
+  const items = csv.split(',').map(s => s.trim()).filter(Boolean);
+  return items.length ? items : null;
+}
+
 async function dispatchEvent(event, ownerId) {
   const { enqueueWebhook } = require('../queues/webhookQueue');
   const endpoints = await listActiveEndpoints(ownerId);
-  const jobs = endpoints.map((ep) => enqueueWebhook({ endpointId: ep.id, url: ep.url, secret: ep.secret, event }));
+  const jobs = [];
+  for (const ep of endpoints) {
+    const allowed = parseEventsList(ep.events);
+    if (allowed && !allowed.includes(event.type)) continue;
+    jobs.push(enqueueWebhook({ endpointId: ep.id, url: ep.url, secret: ep.secret, event }));
+  }
   await Promise.all(jobs);
 }
 
@@ -34,5 +45,6 @@ module.exports = {
   createEndpoint,
   deleteEndpoint,
   dispatchEvent,
+  parseEventsList,
 };
 

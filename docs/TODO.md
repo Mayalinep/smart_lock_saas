@@ -224,6 +224,24 @@
 
 ---
 
+## ✅ **RÉSOLU - CI/CD GitHub Actions**
+
+### Erreur JWT_SECRET manquante - RÉSOLU
+**Problème** : Variable d'environnement `JWT_SECRET` non définie dans CI, causant l'erreur `secretOrPrivateKey must have a value`
+
+**Solution appliquée :**
+- [x] Déplacer `JWT_SECRET` au niveau du job dans `.github/workflows/ci.yml`
+- [x] Ajouter `NODE_ENV: test` globalement
+- [x] Créer `docs/TROUBLESHOOTING.md` pour documenter la solution
+- [x] Pousser la correction vers GitHub
+
+**Pourquoi ça marche :**
+- Les variables d'environnement au niveau du job sont disponibles dans toutes les étapes
+- Prisma et les tests ont maintenant accès à `JWT_SECRET` dès le démarrage
+- Plus d'erreur JWT dans l'environnement CI
+
+---
+
 ## 🎯 **ROADMAP SUGGÉRÉE**
 
 ### **Semaine 1 - Sécurité Critique** 🔥

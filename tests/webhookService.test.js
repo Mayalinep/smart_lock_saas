@@ -1,4 +1,4 @@
-const { signPayload } = require('../src/services/webhookService');
+const { signPayload, parseEventsList } = require('../src/services/webhookService');
 
 describe('webhookService.signPayload', () => {
   it('génère une signature HMAC sha256=...', () => {
@@ -8,6 +8,12 @@ describe('webhookService.signPayload', () => {
     const sig = signPayload(secret, ts, raw);
     expect(sig.startsWith('sha256=')).toBe(true);
     expect(sig.length).toBeGreaterThan(20);
+  });
+
+  it('parseEventsList gère CSV et vide', () => {
+    expect(parseEventsList('a,b , c')).toEqual(['a','b','c']);
+    expect(parseEventsList('')).toBeNull();
+    expect(parseEventsList(null)).toBeNull();
   });
 });
 

@@ -3,6 +3,11 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
+// Validation de la configuration JWT
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required but not set. Please set JWT_SECRET in your environment variables.');
+}
+
 /**
  * Génère un token JWT pour un utilisateur
  * @param {Object} payload - Données à inclure dans le token
