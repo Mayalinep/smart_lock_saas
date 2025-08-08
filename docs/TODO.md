@@ -9,7 +9,7 @@
 
 1. ✅ 🚀 Déploiement production
    - Deploy Vercel/Railway/DigitalOcean, configuration production, monitoring live
-2. 📧 Templates email HTML riches
+2. ✅ 📧 Templates email HTML riches
    - Templates HTML avec données dynamiques, design professionnel, personnalisation
 3. 🔐 Chiffrement des secrets 2FA
    - Chiffrer les secrets TOTP et backup codes en production

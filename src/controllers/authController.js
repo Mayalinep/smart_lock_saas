@@ -2,6 +2,7 @@ const { AuthService, registerUser, loginUser } = require('../services/authServic
 const { getCookieOptions, generateToken } = require('../utils/jwt');
 const jwt = require('jsonwebtoken');
 const { add: addToBlacklist } = require('../services/tokenBlacklist');
+const { notifyWelcome } = require('../services/notificationService');
 
 /**
  * Controller d'authentification
@@ -19,6 +20,11 @@ class AuthController {
 
       // 2. Créer l'utilisateur via le service
       const newUser = await registerUser({ email, password, firstName, lastName, phone });
+
+      // 3. Envoyer l'email de bienvenue (en arrière-plan)
+      notifyWelcome(newUser).catch(error => {
+        console.error('❌ Erreur lors de l\'envoi de l\'email de bienvenue:', error);
+      });
 
       // 4. Générer un JWT avec l'id de l'utilisateur
       const token = generateToken({ userId: newUser.id });
