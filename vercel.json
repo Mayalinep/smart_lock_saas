@@ -1,14 +1,12 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "index.js",
-      "use": "@vercel/node",
-      "config": {
-        "installCommand": "./vercel-build.sh"
-      }
+  "buildCommand": "npm run vercel-build",
+  "installCommand": "npm install",
+  "functions": {
+    "index.js": {
+      "runtime": "@vercel/node@3.1.7"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/(.*)",

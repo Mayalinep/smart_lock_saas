@@ -7,6 +7,8 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "build": "prisma generate",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate",
     "worker": "node scripts/worker.js",
     "test": "jest --runInBand",
     "db:generate": "prisma generate",
