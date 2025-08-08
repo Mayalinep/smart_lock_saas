@@ -50,6 +50,34 @@ const logger = winston.createLogger({
   exitOnError: false
 });
 
+// Masquage des données sensibles dans les objets loggés
+const SENSITIVE_KEYS = new Set(['password', 'token', 'authorization', 'cookie', 'set-cookie', 'code', 'accessCode']);
+function redactValue(val) {
+  if (typeof val === 'string') {
+    // Masquer séquences longues (JWT/tokens)
+    return val.replace(/(Bearer\s+)?[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,}/g, '***JWT***')
+              .replace(/[A-Za-z0-9]{24,}/g, '***SECRET***');
+  }
+  return '***';
+}
+function redact(obj, depth = 0) {
+  if (!obj || typeof obj !== 'object' || depth > 4) return obj;
+  if (Array.isArray(obj)) return obj.map((v) => redact(v, depth + 1));
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (SENSITIVE_KEYS.has(k.toLowerCase())) {
+      out[k] = redactValue(v);
+    } else if (v && typeof v === 'object') {
+      out[k] = redact(v, depth + 1);
+    } else if (typeof v === 'string') {
+      out[k] = redactValue(v);
+    } else {
+      out[k] = v;
+    }
+  }
+  return out;
+}
+
 // Middleware requestId (Correlation ID)
 const requestIdMiddleware = (req, res, next) => {
   const existing = req.headers['x-request-id'];
@@ -65,7 +93,7 @@ const logRequest = (req, res, next) => {
   
   res.on('finish', () => {
     const duration = Date.now() - start;
-    const logData = {
+    const logData = redact({
       requestId: req.requestId || 'n/a',
       method: req.method,
       url: req.url,
@@ -74,7 +102,7 @@ const logRequest = (req, res, next) => {
       userAgent: req.get('User-Agent'),
       ip: req.ip,
       userId: req.user?.userId || 'anonymous'
-    };
+    });
     
     if (res.statusCode >= 400) {
       logger.warn('HTTP Request', logData);
@@ -87,7 +115,7 @@ const logRequest = (req, res, next) => {
 };
 
 const logError = (error, req, res, next) => {
-  logger.error('Application Error', {
+  logger.error('Application Error', redact({
     requestId: req.requestId || 'n/a',
     error: error.message,
     stack: error.stack,
@@ -95,7 +123,7 @@ const logError = (error, req, res, next) => {
     method: req.method,
     userId: req.user?.userId || 'anonymous',
     ip: req.ip
-  });
+  }));
   
   next(error);
 };
