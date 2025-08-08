@@ -1,4 +1,5 @@
 const prisma = require('../config/database');
+const cache = require('./cache');
 
 /**
  * Service de gestion des propriétés
@@ -126,12 +127,20 @@ async function createProperty(data, userId) {
  * @returns {Array} Tableau des propriétés
  */
 async function getUserProperties(userId) {
-  // 1. Utiliser Prisma pour récupérer toutes les propriétés liées à l'utilisateur
+  // 1. Cache 1h
+  const cacheKey = `user:${userId}:properties`;
+  const cached = await cache.get(cacheKey);
+  if (cached) return cached;
+
+  // 2. Utiliser Prisma pour récupérer toutes les propriétés liées à l'utilisateur
   const properties = await prisma.property.findMany({
     where: { ownerId: userId }
   });
 
-  // 2. Retourner le tableau de propriétés
+  // 3. Mettre en cache 1h
+  await cache.set(cacheKey, properties, 3600);
+
+  // 4. Retourner le tableau de propriétés
   return properties;
 }
 

@@ -1,6 +1,7 @@
 const prisma = require('../config/database');
 const lockService = require('./lockService');
 const { hashAccessCode, compareAccessCode } = require('../utils/codeHash');
+const cache = require('./cache');
 
 /**
  * Service de gestion des accès
@@ -132,7 +133,13 @@ class AccessService {
       // On continue même si la serrure échoue - l'accès est créé en base
     }
 
-    // 7. Retourner l'accès créé
+    // 7. Invalider cache lié à la propriété (listes d'accès et lock status)
+    try {
+      await cache.del(`access:property:${propertyId}`);
+      await cache.del(`lock:status:${propertyId}`);
+    } catch (_) {}
+
+    // 8. Retourner l'accès créé
     return newAccess;
   }
 
@@ -157,7 +164,12 @@ class AccessService {
       throw error;
     }
 
-    // 2. Récupérer tous les accès de la propriété avec les infos utilisateur
+    // 2. Cache: liste des accès d'une propriété
+    const cacheKey = `access:property:${propertyId}`;
+    const cached = await cache.get(cacheKey);
+    if (cached) return cached;
+
+    // 3. Récupérer tous les accès de la propriété avec les infos utilisateur
     const accesses = await prisma.access.findMany({
       where: {
         propertyId: propertyId,
@@ -178,7 +190,10 @@ class AccessService {
       }
     });
 
-    // 3. Retourner la liste des accès trouvés
+    // 4. Mettre en cache (TTL 10 min)
+    await cache.set(cacheKey, accesses, 600);
+
+    // 5. Retourner la liste des accès trouvés
     return accesses;
   }
 
@@ -404,7 +419,12 @@ class AccessService {
   static async validateAccessCode(accessCode, propertyId) {
     const now = new Date();
 
-    // 1) Tenter de retrouver l'accès par code exact (legacy) OU par propriété
+    // 1) Cache: validation par code
+    const cacheKey = `access:validate:${propertyId}:${accessCode}`;
+    const cached = await cache.get(cacheKey);
+    if (cached) return cached;
+
+    // 2) Tenter de retrouver l'accès par code exact (legacy) OU par propriété
     // On limite aux accès de la propriété donnée et non révoqués
     const candidates = await prisma.access.findMany({
       where: {
@@ -414,7 +434,7 @@ class AccessService {
       }
     });
 
-    // 2) Vérifier le code contre hashedCode (fallback sur code clair si présent)
+    // 3) Vérifier le code contre hashedCode (fallback sur code clair si présent)
     const matched = candidates.find(a => {
       if (a.hashedCode) return compareAccessCode(accessCode, a.hashedCode);
       return a.code === accessCode; // compat legacy
@@ -424,16 +444,24 @@ class AccessService {
       return { valid: false, reason: 'CODE_INVALID' };
     }
 
-    // 3) Vérifier fenêtre de validité
+    // 4) Vérifier fenêtre de validité
     if (matched.startDate > now) {
-      return { valid: false, reason: 'NOT_STARTED' };
+      const result = { valid: false, reason: 'NOT_STARTED' };
+      // Cache court pour éviter marteau (TTL 60s)
+      await cache.set(cacheKey, result, 60);
+      return result;
     }
     if (matched.endDate <= now) {
-      return { valid: false, reason: 'EXPIRED' };
+      const result = { valid: false, reason: 'EXPIRED' };
+      await cache.set(cacheKey, result, 60);
+      return result;
     }
 
-    // 4) OK
-    return { valid: true, accessId: matched.id, propertyId: matched.propertyId, userId: matched.userId };
+    // 5) OK → TTL = durée restante de validité (max 24h)
+    const ttl = Math.min(24 * 3600, Math.max(1, Math.floor((matched.endDate - now) / 1000)));
+    const result = { valid: true, accessId: matched.id, propertyId: matched.propertyId, userId: matched.userId };
+    await cache.set(cacheKey, result, ttl);
+    return result;
   }
 
   /**
@@ -502,7 +530,12 @@ class AccessService {
     if (!property || property.ownerId !== ownerId) {
       throw new Error('Accès non autorisé à cette propriété');
     }
-    return lockService.getLockStatus(propertyId);
+    const cacheKey = `lock:status:${propertyId}`;
+    const cached = await cache.get(cacheKey);
+    if (cached) return cached;
+    const status = await lockService.getLockStatus(propertyId);
+    await cache.set(cacheKey, status, 300); // 5 min
+    return status;
   }
 }
 
