@@ -1,6 +1,7 @@
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
 const crypto = require('crypto');
+const encryptionService = require('./encryptionService');
 
 class TwoFactorService {
   /**
@@ -47,35 +48,55 @@ class TwoFactorService {
   /**
    * Vérifie un token TOTP
    */
-  static verifyToken(secret, token) {
-    return speakeasy.totp.verify({
-      secret: secret,
-      encoding: 'base32',
-      token: token,
-      window: 2 // Accepte les tokens dans une fenêtre de ±2 périodes (60s)
-    });
+  static verifyToken(encryptedSecret, token) {
+    try {
+      // Déchiffrer le secret TOTP
+      const secret = encryptionService.decrypt(encryptedSecret);
+      
+      return speakeasy.totp.verify({
+        secret: secret,
+        encoding: 'base32',
+        token: token,
+        window: 2 // Accepte les tokens dans une fenêtre de ±2 périodes (60s)
+      });
+    } catch (error) {
+      console.error('❌ Erreur lors de la vérification du token TOTP:', error);
+      return false;
+    }
   }
 
   /**
    * Vérifie un code de sauvegarde
    */
-  static verifyBackupCode(backupCodes, code) {
-    const codes = JSON.parse(backupCodes);
-    const index = codes.indexOf(code);
-    
-    if (index !== -1) {
-      // Supprime le code utilisé
-      codes.splice(index, 1);
+  static verifyBackupCode(encryptedBackupCodes, code) {
+    try {
+      // Déchiffrer les codes de sauvegarde
+      const codes = encryptionService.decryptObject(encryptedBackupCodes);
+      const index = codes.indexOf(code);
+      
+      if (index !== -1) {
+        // Supprime le code utilisé
+        codes.splice(index, 1);
+        return {
+          isValid: true,
+          remainingCodes: codes,
+          encryptedRemainingCodes: encryptionService.encryptObject(codes)
+        };
+      }
+      
       return {
-        isValid: true,
-        remainingCodes: codes
+        isValid: false,
+        remainingCodes: codes,
+        encryptedRemainingCodes: encryptionService.encryptObject(codes)
+      };
+    } catch (error) {
+      console.error('❌ Erreur lors de la vérification du code de sauvegarde:', error);
+      return {
+        isValid: false,
+        remainingCodes: [],
+        encryptedRemainingCodes: encryptionService.encryptObject([])
       };
     }
-    
-    return {
-      isValid: false,
-      remainingCodes: codes
-    };
   }
 
   /**
@@ -84,12 +105,12 @@ class TwoFactorService {
   static async enableTwoFactor(user, secret) {
     const backupCodes = this.generateBackupCodes();
     
-    // En production, on chiffrerait ces données
-    const encryptedSecret = secret; // TODO: Chiffrer avec une clé maître
-    const encryptedBackupCodes = JSON.stringify(backupCodes); // TODO: Chiffrer
+    // Chiffrer les secrets sensibles
+    const encryptedSecret = encryptionService.encrypt(secret);
+    const encryptedBackupCodes = encryptionService.encryptObject(backupCodes);
     
     return {
-      backupCodes: backupCodes,
+      backupCodes: backupCodes, // Codes en clair pour l'affichage initial
       encryptedSecret: encryptedSecret,
       encryptedBackupCodes: encryptedBackupCodes
     };

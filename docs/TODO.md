@@ -16,8 +16,12 @@
    - ✅ Email de révocation d'accès
    - ✅ Email d'alerte batterie faible
    - ✅ Email de tentative d'accès échouée
-3. 🔐 Chiffrement des secrets 2FA
+3. ✅ 🔐 Chiffrement des secrets 2FA
    - Chiffrer les secrets TOTP et backup codes en production
+   - ✅ Service de chiffrement AES-256
+   - ✅ Secrets TOTP chiffrés
+   - ✅ Codes de sauvegarde chiffrés
+   - ✅ Tests mis à jour et fonctionnels
 
 ---
 

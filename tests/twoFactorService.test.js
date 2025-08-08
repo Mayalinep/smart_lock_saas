@@ -57,18 +57,20 @@ describe('TwoFactorService', () => {
   describe('verifyToken', () => {
     it('vérifie un token TOTP valide', () => {
       const secret = 'JBSWY3DPEHPK3PXP';
+      const encryptedSecret = require('../src/services/encryptionService').encrypt(secret);
       const token = '123456'; // Token de test
       
-      const result = TwoFactorService.verifyToken(secret, token);
+      const result = TwoFactorService.verifyToken(encryptedSecret, token);
       
       expect(typeof result).toBe('boolean');
     });
 
     it('rejette un token invalide', () => {
       const secret = 'JBSWY3DPEHPK3PXP';
+      const encryptedSecret = require('../src/services/encryptionService').encrypt(secret);
       const token = '000000';
       
-      const result = TwoFactorService.verifyToken(secret, token);
+      const result = TwoFactorService.verifyToken(encryptedSecret, token);
       
       expect(result).toBe(false);
     });
@@ -77,9 +79,10 @@ describe('TwoFactorService', () => {
   describe('verifyBackupCode', () => {
     it('vérifie un code de sauvegarde valide', () => {
       const backupCodes = ['ABCD1234', 'EFGH5678', 'IJKL9012'];
+      const encryptedBackupCodes = require('../src/services/encryptionService').encryptObject(backupCodes);
       const code = 'ABCD1234';
       
-      const result = TwoFactorService.verifyBackupCode(JSON.stringify(backupCodes), code);
+      const result = TwoFactorService.verifyBackupCode(encryptedBackupCodes, code);
       
       expect(result.isValid).toBe(true);
       expect(result.remainingCodes).toHaveLength(2);
@@ -88,9 +91,10 @@ describe('TwoFactorService', () => {
 
     it('rejette un code de sauvegarde invalide', () => {
       const backupCodes = ['ABCD1234', 'EFGH5678'];
+      const encryptedBackupCodes = require('../src/services/encryptionService').encryptObject(backupCodes);
       const code = 'INVALID';
       
-      const result = TwoFactorService.verifyBackupCode(JSON.stringify(backupCodes), code);
+      const result = TwoFactorService.verifyBackupCode(encryptedBackupCodes, code);
       
       expect(result.isValid).toBe(false);
       expect(result.remainingCodes).toEqual(backupCodes);
@@ -107,7 +111,8 @@ describe('TwoFactorService', () => {
       expect(result).toHaveProperty('encryptedSecret');
       expect(result).toHaveProperty('encryptedBackupCodes');
       expect(result.backupCodes).toHaveLength(10);
-      expect(result.encryptedSecret).toBe(secret); // En production, ce serait chiffré
+      expect(result.encryptedSecret).not.toBe(secret); // Maintenant chiffré
+      expect(require('../src/services/encryptionService').isEncrypted(result.encryptedSecret)).toBe(true);
     });
   });
 
