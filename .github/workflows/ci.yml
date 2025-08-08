@@ -35,7 +35,9 @@ jobs:
 
       - name: Run tests
         env:
+          NODE_ENV: test
           DATABASE_URL: file:./ci-test.db
+          JWT_SECRET: "ci_test_jwt_secret_key_for_testing_only"
           CI: true
         run: npm test -- --runInBand --verbose
 
