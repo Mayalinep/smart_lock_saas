@@ -11,6 +11,11 @@
    - Deploy Vercel/Railway/DigitalOcean, configuration production, monitoring live
 2. ✅ 📧 Templates email HTML riches
    - Templates HTML avec données dynamiques, design professionnel, personnalisation
+   - ✅ Email de bienvenue (intégré dans l'inscription)
+   - ✅ Email de nouveau code d'accès
+   - ✅ Email de révocation d'accès
+   - ✅ Email d'alerte batterie faible
+   - ✅ Email de tentative d'accès échouée
 3. 🔐 Chiffrement des secrets 2FA
    - Chiffrer les secrets TOTP et backup codes en production
 

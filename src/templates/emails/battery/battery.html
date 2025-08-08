@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerte batterie faible - Smart Lock SaaS</title>
+    <style>
+        /* Reset CSS pour emails */
+        body, table, td, p, a, li, blockquote { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+        
+        /* Styles principaux */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+        
+        .tagline {
+            color: #e8e8e8;
+            font-size: 16px;
+            margin: 0;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            color: #f39c12;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .battery-card {
+            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+            border: 2px solid #f39c12;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .battery-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .battery-level {
+            font-size: 32px;
+            font-weight: bold;
+            color: #e67e22;
+            margin: 15px 0;
+        }
+        
+        .battery-status {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .property-info {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .info-value {
+            color: #f39c12;
+        }
+        
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        
+        .warning-title {
+            font-size: 16px;
+            color: #856404;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .warning-text {
+            color: #856404;
+        }
+        
+        .action-steps {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .action-title {
+            font-size: 16px;
+            color: #0c5460;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .step-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+        }
+        
+        .step-number {
+            background-color: #f39c12;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+        
+        .step-text {
+            color: #0c5460;
+            font-size: 14px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .footer {
+            background-color: #2c3e50;
+            color: #bdc3c7;
+            padding: 30px;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .social-links {
+            margin: 20px 0;
+        }
+        
+        .social-link {
+            display: inline-block;
+            margin: 0 10px;
+            color: #bdc3c7;
+            text-decoration: none;
+        }
+        
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .header {
+                padding: 30px 15px;
+            }
+            
+            .title {
+                font-size: 20px;
+            }
+            
+            .battery-icon {
+                font-size: 36px;
+            }
+            
+            .battery-level {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container">
+                    <!-- Header -->
+                    <tr>
+                        <td class="header">
+                            <div class="logo">🔐 Smart Lock SaaS</div>
+                            <p class="tagline">La sécurité intelligente pour vos propriétés</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td class="content">
+                            <h1 class="title">🔋 Alerte batterie faible</h1>
+                            <p class="subtitle">Attention, la batterie de votre serrure est faible</p>
+                            
+                            <div class="battery-card">
+                                <div class="battery-icon">🔋</div>
+                                <div class="battery-level">{{batteryLevel}}%</div>
+                                <div class="battery-status">
+                                    La batterie de votre serrure <strong>{{propertyName}}</strong> 
+                                    nécessite une recharge dans les plus brefs délais.
+                                </div>
+                            </div>
+                            
+                            <div class="property-info">
+                                <h4 style="color: #2c3e50; margin-bottom: 20px; text-align: center;">
+                                    📋 Informations de la serrure
+                                </h4>
+                                
+                                <div class="info-item">
+                                    <span class="info-label">🏠 Propriété :</span>
+                                    <span class="info-value">{{propertyName}}</span>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <span class="info-label">🔑 ID Serrure :</span>
+                                    <span class="info-value">{{lockId}}</span>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <span class="info-label">🔋 Niveau batterie :</span>
+                                    <span class="info-value">{{batteryLevel}}%</span>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <span class="info-label">📅 Dernière mise à jour :</span>
+                                    <span class="info-value">{{lastUpdate}}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="warning-box">
+                                <div class="warning-title">⚠️ Action requise</div>
+                                <div class="warning-text">
+                                    Une batterie faible peut entraîner des dysfonctionnements 
+                                    de la serrure. Nous vous recommandons de recharger la batterie 
+                                    dès que possible pour éviter toute interruption de service.
+                                </div>
+                            </div>
+                            
+                            <div class="action-steps">
+                                <div class="action-title">🔧 Actions recommandées</div>
+                                
+                                <div class="step-item">
+                                    <div class="step-number">1</div>
+                                    <div class="step-text">Vérifiez l'état de la batterie via votre dashboard</div>
+                                </div>
+                                
+                                <div class="step-item">
+                                    <div class="step-number">2</div>
+                                    <div class="step-text">Rechargez la batterie si nécessaire</div>
+                                </div>
+                                
+                                <div class="step-item">
+                                    <div class="step-number">3</div>
+                                    <div class="step-text">Testez la serrure après recharge</div>
+                                </div>
+                                
+                                <div class="step-item">
+                                    <div class="step-number">4</div>
+                                    <div class="step-text">Contactez le support si le problème persiste</div>
+                                </div>
+                            </div>
+                            
+                            <div style="text-align: center;">
+                                <a href="{{dashboardUrl}}" class="cta-button">
+                                    📊 Voir le dashboard
+                                </a>
+                            </div>
+                            
+                            <p style="font-size: 14px; color: #777; text-align: center; margin-top: 30px;">
+                                <strong>Besoin d'aide ?</strong><br>
+                                Notre équipe support est disponible 24/7 pour vous accompagner.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td class="footer">
+                            <div class="social-links">
+                                <a href="#" class="social-link">📧 Support</a>
+                                <a href="#" class="social-link">📖 Documentation</a>
+                                <a href="#" class="social-link">🔧 API</a>
+                            </div>
+                            
+                            <p>
+                                © 2024 Smart Lock SaaS. Tous droits réservés.<br>
+                                Cet email a été envoyé automatiquement<br>
+                                <a href="#" style="color: #bdc3c7;">Se désabonner</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html> 

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tentative d'accès échouée - Smart Lock SaaS</title>
+    <style>
+        /* Reset CSS pour emails */
+        body, table, td, p, a, li, blockquote { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+        
+        /* Styles principaux */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+        
+        .tagline {
+            color: #e8e8e8;
+            font-size: 16px;
+            margin: 0;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            color: #dc3545;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .security-card {
+            background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+            border: 2px solid #dc3545;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .security-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .security-title {
+            font-size: 20px;
+            color: #c82333;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .security-message {
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .attempt-details {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .detail-value {
+            color: #dc3545;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .threat-level {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        
+        .threat-title {
+            font-size: 16px;
+            color: #856404;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .threat-text {
+            color: #856404;
+        }
+        
+        .security-actions {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .action-title {
+            font-size: 16px;
+            color: #0c5460;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .action-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+        }
+        
+        .action-icon {
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            margin-right: 12px;
+        }
+        
+        .action-text {
+            color: #0c5460;
+            font-size: 14px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .footer {
+            background-color: #2c3e50;
+            color: #bdc3c7;
+            padding: 30px;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .social-links {
+            margin: 20px 0;
+        }
+        
+        .social-link {
+            display: inline-block;
+            margin: 0 10px;
+            color: #bdc3c7;
+            text-decoration: none;
+        }
+        
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .header {
+                padding: 30px 15px;
+            }
+            
+            .title {
+                font-size: 20px;
+            }
+            
+            .security-icon {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container">
+                    <!-- Header -->
+                    <tr>
+                        <td class="header">
+                            <div class="logo">🔐 Smart Lock SaaS</div>
+                            <p class="tagline">La sécurité intelligente pour vos propriétés</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td class="content">
+                            <h1 class="title">🚨 Tentative d'accès échouée</h1>
+                            <p class="subtitle">Alerte de sécurité détectée sur votre propriété</p>
+                            
+                            <div class="security-card">
+                                <div class="security-icon">🚨</div>
+                                <div class="security-title">Tentative d'accès échouée</div>
+                                <div class="security-message">
+                                    Une tentative d'accès non autorisée a été détectée sur 
+                                    <strong>{{propertyName}}</strong> et a été automatiquement bloquée.
+                                </div>
+                            </div>
+                            
+                            <div class="attempt-details">
+                                <h4 style="color: #2c3e50; margin-bottom: 20px; text-align: center;">
+                                    📋 Détails de la tentative
+                                </h4>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">🏠 Propriété :</span>
+                                    <span class="detail-value">{{propertyName}}</span>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">🕐 Heure de la tentative :</span>
+                                    <span class="detail-value">{{attemptTime}}</span>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">🌐 Adresse IP :</span>
+                                    <span class="detail-value">{{ipAddress}}</span>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">📱 Navigateur :</span>
+                                    <span class="detail-value">{{userAgent}}</span>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">🔒 Statut :</span>
+                                    <span class="detail-value">BLOQUÉ</span>
+                                </div>
+                            </div>
+                            
+                            <div class="threat-level">
+                                <div class="threat-title">⚠️ Niveau de menace</div>
+                                <div class="threat-text">
+                                    Cette tentative a été classée comme <strong>suspicieuse</strong>. 
+                                    Si vous reconnaissez cette activité, aucune action n'est requise. 
+                                    Sinon, nous vous recommandons de vérifier vos accès.
+                                </div>
+                            </div>
+                            
+                            <div class="security-actions">
+                                <div class="action-title">🔒 Actions de sécurité recommandées</div>
+                                
+                                <div class="action-item">
+                                    <div class="action-icon">🔍</div>
+                                    <div class="action-text">Vérifiez la liste des accès autorisés</div>
+                                </div>
+                                
+                                <div class="action-item">
+                                    <div class="action-icon">🔑</div>
+                                    <div class="action-text">Révoquez les accès suspects si nécessaire</div>
+                                </div>
+                                
+                                <div class="action-item">
+                                    <div class="action-icon">📱</div>
+                                    <div class="action-text">Activez les notifications de sécurité</div>
+                                </div>
+                                
+                                <div class="action-item">
+                                    <div class="action-icon">🛡️</div>
+                                    <div class="action-text">Contactez le support si l'activité persiste</div>
+                                </div>
+                            </div>
+                            
+                            <div style="text-align: center;">
+                                <a href="{{dashboardUrl}}" class="cta-button">
+                                    🔒 Gérer la sécurité
+                                </a>
+                            </div>
+                            
+                            <p style="font-size: 14px; color: #777; text-align: center; margin-top: 30px;">
+                                <strong>Votre sécurité est notre priorité</strong><br>
+                                Notre système de détection avancé protège vos propriétés 24/7.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td class="footer">
+                            <div class="social-links">
+                                <a href="#" class="social-link">📧 Support</a>
+                                <a href="#" class="social-link">📖 Documentation</a>
+                                <a href="#" class="social-link">🔧 API</a>
+                            </div>
+                            
+                            <p>
+                                © 2024 Smart Lock SaaS. Tous droits réservés.<br>
+                                Cet email a été envoyé automatiquement<br>
+                                <a href="#" style="color: #bdc3c7;">Se désabonner</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html> 
