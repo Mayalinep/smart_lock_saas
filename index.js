@@ -17,6 +17,8 @@ const {
 } = require('./src/middleware/security');
 const { logRequest, logError, logger, requestIdMiddleware } = require('./src/utils/logger');
 const { httpMetricsMiddleware, register } = require('./src/services/metrics');
+const swaggerUi = require('swagger-ui-express');
+const { openapiSpec } = require('./src/docs/openapi');
 
 // Import des routes
 const authRoutes = require('./src/routes/auth');
@@ -79,13 +81,55 @@ app.get('/api/metrics', async (_req, res) => {
   res.end(await register.metrics());
 });
 
+// Swagger UI et spec
+app.get('/api/openapi.json', (_req, res) => res.json(openapiSpec));
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapiSpec));
+
 // Middleware de gestion d'erreurs avec logging
 app.use(logError);
 app.use(errorHandler);
 
-// Démarrage du serveur avec logging
-app.listen(PORT, () => {
-  logger.info(`🚀 Serveur démarré sur le port ${PORT}`);
-  logger.info(`📊 Environnement: ${process.env.NODE_ENV || 'development'}`);
-  logger.info(`🔒 Monitoring activé`);
-}); 
+// Démarrage du serveur avec logging (pas en test)
+let server = null;
+if (process.env.NODE_ENV !== 'test') {
+  server = app.listen(PORT, () => {
+    logger.info(`🚀 Serveur démarré sur le port ${PORT}`);
+    logger.info(`📊 Environnement: ${process.env.NODE_ENV || 'development'}`);
+    logger.info(`🔒 Monitoring activé`);
+  });
+}
+
+// Arrêt gracieux
+async function shutdown(signal) {
+  if (global.__isShuttingDown) return;
+  global.__isShuttingDown = true;
+  logger.info(`🛑 Reçu ${signal}, arrêt gracieux...`);
+  try {
+    // fermer HTTP
+    if (server) {
+      await new Promise((resolve) => server.close(resolve));
+      logger.info('✅ HTTP fermé');
+    }
+  } catch (e) {
+    logger.error('Erreur fermeture HTTP', { error: e.message });
+  }
+  try {
+    // fermer Prisma (via process.on in config), rien à faire ici
+  } catch (_) {}
+  try {
+    // fermer Redis/queues si présents
+    const cache = require('./src/services/cache');
+    const { shutdownQueues } = require('./src/queues/emailQueue');
+    await shutdownQueues?.();
+    await cache.quit?.();
+  } catch (e) {
+    logger.error('Erreur fermeture ressources', { error: e.message });
+  }
+  process.exit(0);
+}
+
+['SIGTERM', 'SIGINT'].forEach(sig => {
+  process.on(sig, () => shutdown(sig));
+});
+
+module.exports = app;

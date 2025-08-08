@@ -101,5 +101,8 @@ module.exports = {
   del,
   delByPattern,
   getMetrics,
+  // helpers readiness/shutdown
+  isConnected: () => isRedisReady,
+  quit: async () => { try { if (redisClient) { await redisClient.quit(); } } catch (_) {} finally { isRedisReady = false; redisClient = null; } },
 };
 

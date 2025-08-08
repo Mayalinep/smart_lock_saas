@@ -17,6 +17,15 @@ router.get('/health', (req, res) => {
   });
 });
 
+// Liveness: OK si le process tourne et pas en arrêt
+router.get('/health/liveness', (_req, res) => {
+  const shuttingDown = Boolean(global.__isShuttingDown);
+  return res.status(shuttingDown ? 503 : 200).json({
+    status: shuttingDown ? 'stopping' : 'ok',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Health check détaillé avec vérification de la base de données
 router.get('/health/detailed', async (req, res) => {
   try {
@@ -74,6 +83,29 @@ router.get('/health/detailed', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   }
+});
+
+// Readiness: vérifie DB + cache Redis
+router.get('/health/readiness', async (_req, res) => {
+  const result = { db: 'unknown', cache: 'unknown' };
+  let ok = true;
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    result.db = 'ready';
+  } catch (e) {
+    result.db = 'error';
+    ok = false;
+  }
+  try {
+    await cache.set('health:readiness', { t: Date.now() }, 5);
+    const v = await cache.get('health:readiness');
+    result.cache = v ? 'ready' : 'error';
+    if (!v) ok = false;
+  } catch (e) {
+    result.cache = 'error';
+    ok = false;
+  }
+  return res.status(ok ? 200 : 503).json({ status: ok ? 'ready' : 'not_ready', ...result, timestamp: new Date().toISOString() });
 });
 
 // Endpoint pour les métriques (format Prometheus)

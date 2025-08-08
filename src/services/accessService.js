@@ -3,7 +3,7 @@ const lockService = require('./lockService');
 const { hashAccessCode, compareAccessCode } = require('../utils/codeHash');
 const cache = require('./cache');
 const metrics = require('./metrics');
-const { enqueueAccessRevoked } = require('../queues/emailQueue');
+const { enqueueAccessRevoked, enqueueExpiredAttempt } = require('../queues/emailQueue');
 
 /**
  * Service de gestion des accès
@@ -495,6 +495,13 @@ class AccessService {
     if (matched.endDate <= now) {
       const result = { valid: false, reason: 'EXPIRED' };
       try { metrics.incAccessValidate('expired'); } catch (_) {}
+      // notifier propriétaire (best effort)
+      try {
+        const property = await prisma.property.findUnique({ where: { id: propertyId }, include: { owner: true } });
+        if (property?.owner?.email) {
+          await enqueueExpiredAttempt({ ownerEmail: property.owner.email, propertyName: property.name });
+        }
+      } catch (_) {}
       await cache.set(cacheKey, result, 60);
       return result;
     }

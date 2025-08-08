@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "worker": "node scripts/worker.js",
+    "test": "jest --runInBand",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
@@ -24,6 +26,7 @@
     "@prisma/client": "^5.6.0",
     "axios": "^1.11.0",
     "bcrypt": "^5.1.1",
+    "bullmq": "^5.6.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -31,6 +34,7 @@
     "express-rate-limit": "^7.5.1",
     "express-slow-down": "^2.1.0",
     "helmet": "^7.2.0",
+    "ioredis": "^5.4.1",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
     "nodemailer": "^6.9.13",
@@ -42,7 +46,10 @@
     "zod": "^4.0.14"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-mock-extended": "^3.0.4",
     "nodemon": "^3.0.1",
-    "prisma": "^5.6.0"
+    "prisma": "^5.6.0",
+    "supertest": "^7.0.0"
   }
 }
