@@ -3,6 +3,7 @@ const lockService = require('./lockService');
 const { hashAccessCode, compareAccessCode } = require('../utils/codeHash');
 const cache = require('./cache');
 const metrics = require('./metrics');
+const { notifyAccessRevoked } = require('./notificationService');
 
 /**
  * Service de gestion des accès
@@ -408,7 +409,7 @@ class AccessService {
     }
 
     // 6. Retourner le succès avec informations de traçabilité
-    return {
+    const result = {
       success: true,
       message: 'Accès révoqué avec succès',
       data: {
@@ -417,6 +418,22 @@ class AccessService {
         revokedBy: ownerId
       }
     };
+
+    // 7. Notification (best effort)
+    try {
+      const owner = await prisma.user.findUnique({ where: { id: ownerId } });
+      const user = await prisma.user.findUnique({ where: { id: revokedAccess.userId } });
+      const property = await prisma.property.findUnique({ where: { id: revokedAccess.propertyId } });
+      await notifyAccessRevoked({
+        ownerEmail: owner?.email,
+        userEmail: user?.email,
+        propertyName: property?.name || property?.id,
+        code: revokedAccess.code,
+        reason: 'Révocation manuelle par le propriétaire',
+      });
+    } catch (_) {}
+
+    return result;
   }
 
   /**

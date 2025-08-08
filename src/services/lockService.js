@@ -1,6 +1,7 @@
 // src/services/lockService.js
 
 const { PrismaClient } = require('@prisma/client');
+const { notifyBatteryLow } = require('./notificationService');
 const prisma = new PrismaClient();
 
 /**
@@ -121,6 +122,13 @@ module.exports = {
     // Si batterie faible, enregistrer un événement spécifique
     if (batteryLevel < 20) {
       await logEvent(propertyId, 'BATTERY_LOW', `Niveau de batterie critique: ${batteryLevel}%`);
+      // Notifier le propriétaire (best effort)
+      try {
+        const property = await prisma.property.findUnique({ where: { id: propertyId }, include: { owner: true } });
+        if (property?.owner?.email) {
+          await notifyBatteryLow({ ownerEmail: property.owner.email, propertyName: property.name, batteryLevel });
+        }
+      } catch (_) {}
     }
     
     return {
