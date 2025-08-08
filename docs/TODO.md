@@ -74,12 +74,12 @@
 **Problème** : Pagination limit/offset inefficace sur gros datasets
 
 **Tâches :**
-- [ ] Remplacer `limit/offset` par pagination cursor dans :
+- [x] Remplacer `limit/offset` par pagination cursor dans :
   - `GET /api/lock/events/:propertyId`
   - `GET /api/access/my-accesses`
   - `GET /api/access/property/:id`
-- [ ] Modifier schémas Zod pour cursors
-- [ ] Ajouter `nextCursor` et `hasMore` dans réponses API
+- [x] Modifier schémas Zod pour cursors
+- [x] Ajouter `nextCursor` et `hasMore` dans réponses API
 - [ ] Tester avec datasets > 10k enregistrements
 - [ ] Documenter utilisation cursors
 
@@ -96,7 +96,7 @@
 - [x] Cache propriétés utilisateur (TTL = 1h)
 - [x] Cache résultats `getLockStatus` (TTL = 5min)
 - [x] Invalidation cache lors modifications
-- [ ] Métriques hit/miss ratio
+- [x] Métriques hit/miss ratio
 
 **Impact** : 🟡 Important - Performance + coûts DB
 
