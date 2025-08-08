@@ -1,0 +1,68 @@
+{
+  "info": { "name": "SmartLock API", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json" },
+  "item": [
+    {
+      "name": "Auth - Register",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api","auth","register"] },
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"user.{{timestamp}}@example.com\",\n  \"password\": \"TestPassword123!\",\n  \"firstName\": \"Maya\",\n  \"lastName\": \"Dev\"\n}" }
+      }
+    },
+    {
+      "name": "Auth - Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const sc = pm.response.headers.get('Set-Cookie') || '';",
+              "const m = sc.match(/token=([^;]+)/);",
+              "if (m) { pm.collectionVariables.set('token', m[1]); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"user.{{timestamp}}@example.com\",\n  \"password\": \"TestPassword123!\"\n}" }
+      }
+    },
+    {
+      "name": "Properties - Create",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Cookie", "value": "token={{token}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/properties", "host": ["{{baseUrl}}"], "path": ["api","properties"] },
+        "body": { "mode": "raw", "raw": "{\n  \"title\": \"Appartement A\",\n  \"address\": \"10 rue X\",\n  \"description\": \"\"\n}" }
+      }
+    },
+    {
+      "name": "Access - Create",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Cookie", "value": "token={{token}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/access", "host": ["{{baseUrl}}"], "path": ["api","access"] },
+        "body": { "mode": "raw", "raw": "{\n  \"propertyId\": \"<PROP_ID>\",\n  \"userId\": \"<GUEST_ID>\",\n  \"startDate\": \"2025-08-08T10:55:00.000Z\",\n  \"endDate\": \"2025-08-15T10:55:00.000Z\",\n  \"accessType\": \"TEMPORARY\",\n  \"description\": \"Invité\"\n}" }
+      }
+    },
+    {
+      "name": "Access - Validate",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/api/access/validate", "host": ["{{baseUrl}}"], "path": ["api","access","validate"] },
+        "body": { "mode": "raw", "raw": "{\n  \"propertyId\": \"<PROP_ID>\",\n  \"code\": \"<CODE>\"\n}" }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "timestamp", "value": "{{$timestamp}}" },
+    { "key": "token", "value": "" }
+  ]
+}
