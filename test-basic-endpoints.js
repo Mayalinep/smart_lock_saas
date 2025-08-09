@@ -12,13 +12,13 @@ async function testBasicEndpoints() {
         { path: '/api/metrics', method: 'GET', description: 'Metrics' },
         { path: '/api/auth/register', method: 'POST', description: 'Register (POST)', data: { 
             email: 'testuser' + Date.now() + '@example.com', 
-            password: 'TestPassword123!', 
+            password: 'test_password_123', 
             firstName: 'Test', 
             lastName: 'User' 
         } },
         { path: '/api/auth/login', method: 'POST', description: 'Login (POST)', data: { 
             email: 'test@example.com', 
-            password: 'TestPassword123!' 
+            password: 'test_password_123' 
         } }
     ];
 
