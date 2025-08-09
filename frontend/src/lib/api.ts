@@ -31,7 +31,7 @@ export class ApiClient {
     }
   }
 
-  async post(endpoint: string, data: any) {
+  async post(endpoint: string, data: unknown) {
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'POST',
