@@ -1,9 +1,19 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+        <div className="text-center sm:text-left">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            🔐 Smart Lock SaaS
+          </h1>
+          <p className="text-gray-600">
+            Système de serrures intelligentes avec Next.js + TypeScript
+          </p>
+        </div>
+
         <Image
           className="dark:invert"
           src="/next.svg"
@@ -12,16 +22,30 @@ export default function Home() {
           height={38}
           priority
         />
+        
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="font-medium text-blue-900 mb-2">🚀 Test de l'API</h3>
+          <p className="text-blue-700 text-sm mb-3">
+            Vérifiez que votre frontend communique avec le backend
+          </p>
+          <Link 
+            href="/test"
+            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+          >
+            Tester la Connexion API
+          </Link>
+        </div>
+
         <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
           <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
+            Frontend Next.js configuré sur{" "}
             <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
+              port 3001
             </code>
             .
           </li>
           <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
+            Backend API disponible sur port 3000.
           </li>
         </ol>
 
