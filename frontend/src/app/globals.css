@@ -2,7 +2,19 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #344D59;
+  
+  /* Palette SmartLock */
+  --primary: #137C8B;
+  --secondary: #709CA7;
+  --accent: #7A90A4;
+  --neutral: #B8CBD0;
+  --text: #344D59;
+  --white: #FFFFFF;
+  
+  /* Couleurs d'action vibrantes */
+  --success: #16A085;
+  --warning: #FF6B35;
 }
 
 @theme inline {
@@ -10,6 +22,16 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  /* Couleurs personnalisées SmartLock */
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-neutral: var(--neutral);
+  --color-text: var(--text);
+  --color-white: var(--white);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
 }
 
 @media (prefers-color-scheme: dark) {

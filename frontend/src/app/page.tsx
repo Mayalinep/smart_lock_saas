@@ -1,126 +1,123 @@
-import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <div className="text-center sm:text-left">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            🔐 Smart Lock SaaS
-          </h1>
-          <p className="text-gray-600">
-            Système de serrures intelligentes avec Next.js + TypeScript
+    <div className="min-h-screen bg-white">
+      {/* Header/Navigation */}
+      <nav className="bg-white border-b border-neutral">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16 items-center">
+            <div className="flex items-center">
+              <div className="text-2xl font-bold text-primary">
+                🔐 SmartLock
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link 
+                href="/test"
+                className="text-text hover:text-primary transition-colors"
+              >
+                API Test
+              </Link>
+              <button className="bg-success hover:bg-primary text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                Commencer
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-white to-neutral py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-5xl md:text-6xl font-bold text-text mb-6">
+              Sécurisez vos propriétés avec
+              <span className="text-success block">SmartLock SaaS</span>
+            </h1>
+            <p className="text-xl text-accent max-w-3xl mx-auto mb-8">
+              La solution moderne de gestion d'accès pour propriétaires intelligents. 
+              Contrôlez, surveillez et sécurisez vos biens immobiliers en temps réel.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button className="bg-success hover:bg-primary text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors shadow-lg">
+                Essai Gratuit 14 jours
+              </button>
+              <button className="border-2 border-primary text-primary hover:bg-primary hover:text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors">
+                Voir la Démo
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-text mb-4">
+              Pourquoi choisir SmartLock ?
+            </h2>
+            <p className="text-xl text-accent">
+              Une plateforme complète pour la gestion moderne de vos accès
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center p-6 rounded-xl bg-neutral/20 hover:bg-neutral/30 transition-colors">
+              <div className="text-4xl mb-4">🔒</div>
+              <h3 className="text-xl font-semibold text-text mb-2">Sécurité Maximale</h3>
+              <p className="text-accent">
+                Codes temporaires, logs d'accès, notifications en temps réel. Votre sécurité est notre priorité.
+              </p>
+            </div>
+            
+            <div className="text-center p-6 rounded-xl bg-neutral/20 hover:bg-neutral/30 transition-colors">
+              <div className="text-4xl mb-4">📱</div>
+              <h3 className="text-xl font-semibold text-text mb-2">Contrôle Total</h3>
+              <p className="text-accent">
+                Interface web intuitive accessible partout. Gérez tous vos accès depuis un seul endroit.
+              </p>
+            </div>
+            
+            <div className="text-center p-6 rounded-xl bg-neutral/20 hover:bg-neutral/30 transition-colors">
+              <div className="text-4xl mb-4">⚡</div>
+              <h3 className="text-xl font-semibold text-text mb-2">Installation Simple</h3>
+              <p className="text-accent">
+                Configuration en 5 minutes. Compatible avec la plupart des serrures connectées du marché.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-primary">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-bold text-white mb-4">
+            Prêt à révolutionner votre gestion d'accès ?
+          </h2>
+          <p className="text-xl text-white/90 mb-8">
+            Rejoignez des centaines de propriétaires qui font confiance à SmartLock
           </p>
+          <button className="bg-success hover:bg-white hover:text-success text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors shadow-lg border-2 border-success">
+            Commencer Maintenant
+          </button>
         </div>
+      </section>
 
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-medium text-blue-900 mb-2">🚀 Test de l'API</h3>
-          <p className="text-blue-700 text-sm mb-3">
-            Vérifiez que votre frontend communique avec le backend
-          </p>
-          <Link 
-            href="/test"
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
-          >
-            Tester la Connexion API
-          </Link>
+      {/* Footer */}
+      <footer className="bg-text py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-white mb-4">
+              🔐 SmartLock
+            </div>
+            <p className="text-white/70">
+              La solution de gestion d'accès qui grandit avec vous
+            </p>
+          </div>
         </div>
-
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Frontend Next.js configuré sur{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              port 3001
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Backend API disponible sur port 3000.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
       </footer>
     </div>
   );
