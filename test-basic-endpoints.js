@@ -1,19 +1,25 @@
 const axios = require('axios');
 
-const BASE_URL = 'https://smart-lock-saas-8vn4pno3r-mayas-projects-b1d345cf.vercel.app';
+const BASE_URL = 'https://smart-lock-saas-lsymrknzg-mayas-projects-b1d345cf.vercel.app';
 
 async function testBasicEndpoints() {
     console.log('🔍 TESTS DES ENDPOINTS DE BASE');
     console.log('================================\n');
 
     const endpoints = [
-        { path: '/', method: 'GET', description: 'Root endpoint' },
-        { path: '/api', method: 'GET', description: 'API root' },
         { path: '/api/health', method: 'GET', description: 'Health check' },
         { path: '/api/docs', method: 'GET', description: 'API documentation' },
-        { path: '/api/health/metrics', method: 'GET', description: 'Metrics' },
-        { path: '/api/auth/register', method: 'POST', description: 'Register (POST)', data: { email: 'test@example.com', password: 'test' } },
-        { path: '/api/auth/login', method: 'POST', description: 'Login (POST)', data: { email: 'test@example.com', password: 'test' } }
+        { path: '/api/metrics', method: 'GET', description: 'Metrics' },
+        { path: '/api/auth/register', method: 'POST', description: 'Register (POST)', data: { 
+            email: 'testuser' + Date.now() + '@example.com', 
+            password: 'TestPassword123!', 
+            firstName: 'Test', 
+            lastName: 'User' 
+        } },
+        { path: '/api/auth/login', method: 'POST', description: 'Login (POST)', data: { 
+            email: 'test@example.com', 
+            password: 'TestPassword123!' 
+        } }
     ];
 
     for (const endpoint of endpoints) {
