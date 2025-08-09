@@ -79,7 +79,7 @@ npm run db:studio      # Interface graphique Prisma
 DATABASE_URL="postgresql://user:password@localhost:5432/smart_lock_saas"
 
 # JWT
-JWT_SECRET="votre_clé_secrète_très_sécurisée"
+JWT_SECRET="your_super_secure_jwt_secret_here"
 JWT_EXPIRES_IN="7d"
 
 # Serveur
