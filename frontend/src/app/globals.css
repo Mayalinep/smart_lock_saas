@@ -11,6 +11,10 @@
   --neutral: #f8fafc;    /* Gris très clair */
   --border: #e2e8f0;     /* Bordures subtiles */
   --white: #FFFFFF;
+
+  /* Variables pour le composant Hero */
+  --brand: 162 80% 40%;          /* Basé sur notre primary */
+  --brand-foreground: 168 85% 35%; /* Basé sur notre success */
 }
 
 @theme inline {
@@ -32,6 +36,8 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --brand: 168 85% 35%;
+    --brand-foreground: 162 80% 40%;
   }
 }
 
@@ -39,4 +45,53 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+  .delay-700 {
+    animation-delay: 700ms;
+  }
+  .delay-1000 {
+    animation-delay: 1000ms;
+  }
+}
+
+@keyframes appear {
+  0% { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes appear-zoom {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-appear {
+  animation: appear 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.animate-appear-zoom {
+  animation: appear-zoom 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  opacity: 0;
+  will-change: transform, opacity;
 }
