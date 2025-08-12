@@ -8,12 +8,15 @@ import { Glow } from "@/components/ui/glow";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 interface HeroAction {
   text: string;
   href: string;
   icon?: React.ReactNode;
   variant?: "default" | "glow";
+  asChild?: boolean;
+  children?: React.ReactNode;
 }
 
 interface HeroProps {
@@ -42,7 +45,13 @@ export function HeroSection({
   image,
 }: HeroProps) {
   const { resolvedTheme } = useTheme();
-  const imageSrc = resolvedTheme === "light" ? image.light : image.dark;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const imageSrc = mounted ? (resolvedTheme === "dark" ? image.dark : image.light) : image.light;
 
   return (
     <section
@@ -56,7 +65,7 @@ export function HeroSection({
         <div className="flex flex-col items-center gap-6 text-center sm:gap-12">
           {/* Badge */}
           {badge && (
-            <Badge variant="outline" className="animate-appear delay-200 gap-2">
+            <Badge variant="outline" className="animate-appear gap-2">
               <span className="text-muted-foreground">{badge.text}</span>
               <a href={badge.action.href} className="flex items-center gap-1">
                 {badge.action.text}
@@ -66,31 +75,36 @@ export function HeroSection({
           )}
 
           {/* Title */}
-          <h1 className="relative z-10 block animate-appear delay-500 whitespace-pre-line bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-4xl font-semibold text-transparent drop-shadow-xl sm:text-6xl md:text-8xl">
+          <h1 className="relative z-10 block animate-appear animate-delay-500 whitespace-pre-line bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-4xl font-semibold text-transparent drop-shadow-xl sm:text-6xl md:text-8xl">
             {title}
           </h1>
 
           {/* Description */}
-          <p className="text-md relative z-10 max-w-[550px] animate-appear font-medium text-muted-foreground delay-800 sm:text-xl">
+          <p className="text-md relative z-10 max-w-[550px] animate-appear animate-delay-800 font-medium gradient-to-b from-muted-foreground to-foreground sm:text-xl">
             {description}
           </p>
 
           {/* Actions */}
-          <div className="relative z-10 flex animate-appear justify-center gap-4 delay-1100">
-            {actions.map((action, index) => (
-              <Button key={index} variant={action.variant} size="lg" asChild>
-                <a href={action.href} className="flex items-center gap-2">
-                  {action.icon}
-                  {action.text}
-                </a>
-              </Button>
-            ))}
+          <div className="relative z-10 flex animate-appear animate-delay-1100 justify-center gap-4">
+            {actions.map((action, index) => {
+              if (action.children) {
+                return <div key={index}>{action.children}</div>;
+              }
+              return (
+                <Button key={index} variant={action.variant} size="lg" asChild>
+                  <a href={action.href} className="flex items-center gap-2">
+                    {action.icon}
+                    {action.text}
+                  </a>
+                </Button>
+              );
+            })}
           </div>
 
           {/* Image with Glow */}
           <div className="relative pt-12">
             <MockupFrame
-              className="animate-appear delay-1400"
+              className="animate-appear animate-delay-1400"
               size="small"
             >
               <Mockup type="responsive">
@@ -105,7 +119,7 @@ export function HeroSection({
             </MockupFrame>
             <Glow
               variant="top"
-              className="animate-appear-zoom delay-1700"
+              className="animate-appear-zoom animate-delay-1700"
             />
           </div>
         </div>

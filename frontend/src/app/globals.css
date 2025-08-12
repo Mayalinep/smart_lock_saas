@@ -23,13 +23,22 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   
-  /* Couleurs personnalisées SmartLock - Simplifiées */
+  /* Couleurs Tailwind requises pour les composants */
   --color-primary: var(--primary);
-  --color-success: var(--success);
-  --color-text: var(--text);
-  --color-neutral: var(--neutral);
+  --color-primary-foreground: var(--white);
+  --color-secondary: var(--neutral);
+  --color-secondary-foreground: var(--text);
+  --color-muted: var(--neutral);
+  --color-muted-foreground: #71717a;
+  --color-accent: var(--neutral);
+  --color-accent-foreground: var(--text);
+  --color-destructive: #dc2626;
+  --color-destructive-foreground: var(--white);
   --color-border: var(--border);
-  --color-white: var(--white);
+  --color-input: var(--border);
+  --color-ring: var(--primary);
+  --color-brand: hsl(var(--brand));
+  --color-brand-foreground: hsl(var(--brand-foreground));
 }
 
 @media (prefers-color-scheme: dark) {
@@ -48,24 +57,44 @@ body {
 }
 
 @layer utilities {
-  .delay-100 {
-    animation-delay: 100ms;
+  /* Classes de délai personnalisées pour les animations */
+  .animate-delay-200 {
+    animation-delay: 200ms !important;
   }
-  .delay-300 {
-    animation-delay: 300ms;
+  .animate-delay-500 {
+    animation-delay: 500ms !important;
   }
-  .delay-700 {
-    animation-delay: 700ms;
+  .animate-delay-800 {
+    animation-delay: 800ms !important;
   }
-  .delay-1000 {
-    animation-delay: 1000ms;
+  .animate-delay-1100 {
+    animation-delay: 1100ms !important;
+  }
+  .animate-delay-1400 {
+    animation-delay: 1400ms !important;
+  }
+  .animate-delay-1700 {
+    animation-delay: 1700ms !important;
+  }
+
+  /* Classes d'animation personnalisées avec spécificité plus élevée */
+  .animate-appear {
+    animation: appear 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  .animate-appear-zoom {
+    animation: appear-zoom 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+    will-change: transform, opacity;
   }
 }
 
 @keyframes appear {
   0% { 
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(30px);
   }
   100% {
     opacity: 1;
@@ -84,14 +113,22 @@ body {
   }
 }
 
-.animate-appear {
-  animation: appear 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  opacity: 0;
-  will-change: transform, opacity;
+
+
+@keyframes star-move-top {
+  0%   { transform: translateX(0); }
+  50%  { transform: translateX(250%); }
+  100% { transform: translateX(0); }
+}
+@keyframes star-move-bottom {
+  0%   { transform: translateX(0); }
+  50%  { transform: translateX(-250%); }
+  100% { transform: translateX(0); }
 }
 
-.animate-appear-zoom {
-  animation: appear-zoom 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  opacity: 0;
-  will-change: transform, opacity;
+.animate-star-movement-top { 
+  animation: star-move-top linear infinite; 
+}
+.animate-star-movement-bottom { 
+  animation: star-move-bottom linear infinite; 
 }
